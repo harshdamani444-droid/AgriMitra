@@ -5,6 +5,8 @@ import {
   logoutUser,
   getCurrentUser,
   updateAvatar,
+  googleOAuth,
+  completeProfile
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -23,6 +25,8 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser);
 
+router.route("/googleVerify").post(googleOAuth);
+
 // secure routes
 router.route("/logout").post(verifyJWT, logoutUser);
 
@@ -38,5 +42,7 @@ router.route("/update-avatar").patch(
   ]),
   updateAvatar
 );
+
+router.route("/complete-profile").patch(verifyJWT, completeProfile);
 
 export default router;
