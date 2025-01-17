@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { roles } from "../constants.js";
+import { OAuth2Client } from "google-auth-library"
 
 const generateAccessAndRefreshToken = async (user) => {
   try {
@@ -57,6 +58,9 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     phoneNumber,
     avatar: avatarResponse?.secure_url || null,
+    role,
+    isEmailVerified: false,
+    googleVerificationStatus: "notVerified",
   });
 
   // generate access and refresh tokens
@@ -203,4 +207,123 @@ const updateAvatar = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, userResponse, "Avatar updated successfully"));
 });
 
-export { registerUser, loginUser, logoutUser, getCurrentUser, updateAvatar };
+const googleOAuth = asyncHandler(async (req, res) => {
+
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+  const { token } = req.body;
+
+  if (!token) {
+    throw new ApiError(400, "Token is required");
+  }
+
+  try {
+    const ticket = await client.verifyIdToken(
+      {
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      }
+    )
+
+    const payload = ticket.getPayload();
+
+
+
+    if (payload?.email_verified) {
+      const user = await User.findOne({ email: payload?.email });
+
+      if (user) {
+        const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user);
+
+        const userResponse = {
+          ...user.toJSON(),
+          password: undefined,
+          accessToken,
+          refreshToken,
+        };
+
+        const options = {
+          httpOnly: true,
+          secure: true,
+        };
+
+        return res
+          .status(200)
+          .cookie("accessToken", accessToken, options)
+          .cookie("refreshToken", refreshToken, options)
+          .json(new ApiResponse(200, userResponse, "User logged in successfully"));
+      } else {
+        const newUser = await User.create({
+          name: payload?.name,
+          email: payload?.email,
+          avatar: payload?.picture,
+          isEmailVerified: true,
+          googleVerificationStatus: "profileIncomplete",
+        });
+
+
+        const { accessToken, refreshToken } = await generateAccessAndRefreshToken(newUser);
+
+        const userResponse = {
+          ...newUser.toJSON(),
+          password: undefined,
+          accessToken,
+          refreshToken,
+        };
+
+        const options = {
+          httpOnly: true,
+          secure: true,
+        };
+
+        return res
+          .status(200)
+          .cookie("accessToken", accessToken, options)
+          .cookie("refreshToken", refreshToken, options)
+          .json(new ApiResponse(200, userResponse, "User registered successfully"));
+      }
+
+    }
+
+
+  } catch (error) {
+    // TODO - handle error
+    throw new ApiError(500, "ERROR", error);
+  }
+});
+
+const completeProfile = asyncHandler(async (req, res) => {
+  const { password, phoneNumber, role } = req?.body;
+  if (!password || !phoneNumber || !role) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  if (!roles.includes(role)) {
+    throw new ApiError(400, "Invalid role");
+  }
+
+  const user = req.user;
+
+  if (user?.googleVerificationStatus === "profileIncomplete") {
+    user.password = password;
+    user.phoneNumber = phoneNumber;
+    user.role = role;
+    user.googleVerificationStatus = "completed";
+    await user.save({ validateBeforeSave: false });
+
+    const userResponse = {
+      ...user.toJSON(),
+      password: undefined,
+    };
+
+    return res.status(200).json(new ApiResponse(200, userResponse, "Profile completed successfully"));
+  } else if (user?.googleVerificationStatus === "completed") {
+    throw new ApiError(400, "Profile already completed");
+  } else if (user?.googleVerificationStatus === "notVerified") {
+    throw new ApiError(400, "Google verification pending");
+  }
+
+
+});
+
+export { registerUser, loginUser, logoutUser, getCurrentUser, updateAvatar, googleOAuth, completeProfile };

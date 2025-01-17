@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/slices/authSlice";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"
+import axios from "axios";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -13,6 +15,31 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(loginUser({ email, password }));
+  };
+
+  const handleLoginSuccess = async (credentialResponse) => {
+
+    console.log("credentialResponse", credentialResponse);
+
+    const token = credentialResponse.credential;
+
+    console.log("token", token);
+
+    if (!token) {
+      console.error("No token received");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:4000/api/v1/user/googleVerify", { token });
+      console.log("User info:", response.data.user);
+    } catch (error) {
+      console.error("Error verifying token:", error);
+    }
+  };
+
+  const handleLoginFailure = () => {
+    console.error("Login failed");
   };
 
   return (
@@ -128,6 +155,17 @@ const Login = () => {
               </Link>
             </div>
           </div>
+
+          <GoogleOAuthProvider clientId="294818588293-rlh6b2gk5i2qv31tdttv6de7i0tirogd.apps.googleusercontent.com">
+            <div>
+              <h1>Google Authentication</h1>
+              <GoogleLogin
+                onSuccess={handleLoginSuccess}
+                onError={handleLoginFailure}
+              />
+            </div>
+          </GoogleOAuthProvider>
+
         </div>
       </div>
     </div>

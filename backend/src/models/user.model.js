@@ -19,18 +19,15 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     resetPasswordToken: {
       type: String,
     },
     phoneNumber: {
       type: String,
-      required: true,
     },
     role: {
       type: String,
-      required: true,
       enum: ["farmer", "buyer", "admin"],
       default: "buyer",
     },
@@ -43,6 +40,14 @@ const userSchema = new mongoose.Schema(
         ref: "discountToken",
       },
     ],
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    googleVerificationStatus: {
+      type: String,
+      enum: ["notVerified", "profileIncomplete", "completed"],
+    },
     accessToken: {
       type: String,
     },
