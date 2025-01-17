@@ -6,7 +6,7 @@ import { signupUser } from "../redux/slices/authSlice";
 
 const SignUp = () => {
   const dispatch = useDispatch();
-  const { loading, error, user } = useSelector((state) => state.auth);
+  // const { loading, error, user } = useSelector((state) => state.auth);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -20,7 +20,12 @@ const SignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(signupUser(formData));
+    const formDataToSend = new FormData();
+    for (let key in formData) {
+      formDataToSend.append(key, formData[key]);
+    }
+    console.log(formDataToSend);
+    dispatch(signupUser(formDataToSend));
   };
 
   const handleChange = (e) => {
