@@ -22,7 +22,7 @@ const generateAccessAndRefreshToken = async (user) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from request body
-  const { name, email, password, phoneNumber, avatar, role } = req.body;
+  const { name, email, password, phoneNumber, role } = req.body;
 
   // validation - not empty
   if (!name || !email || !password || !phoneNumber || !role) {
@@ -45,7 +45,9 @@ const registerUser = asyncHandler(async (req, res) => {
   const avatarLocalPath = req?.files?.avatar?.[0]?.path || null;
   let avatarResponse;
   if (avatarLocalPath) {
+
     avatarResponse = await uploadOnCloudinary(avatarLocalPath);
+
   }
 
   // create user object and save it to database
