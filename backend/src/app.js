@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
 
 const app = express();
 
@@ -10,6 +11,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(bodyParser.json());
 
 app.use(
   express.json({
@@ -31,6 +34,9 @@ app.use(cookieParser());
 // routes import
 import userRoutes from "./routes/user.routes.js";
 
+import cartRoutes from "./routes/cart.routes.js";
+
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/cart", cartRoutes);
 
 export { app };
