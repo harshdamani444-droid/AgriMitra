@@ -27,7 +27,7 @@ router.route("/create-product").post(
 
 router.route("/get-all-product").get(getAllProduct);
 
-router.route("/get-product-by-category").get(getProductByCategory);
+router.route("/get-product-by-category/:category").get(getProductByCategory);
 
 router
   .route("/get-product-between-price-range")
