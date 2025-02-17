@@ -153,7 +153,8 @@ const Login = () => {
             </div>
           </div>
 
-          <GoogleOAuthProvider clientId="294818588293-rlh6b2gk5i2qv31tdttv6de7i0tirogd.apps.googleusercontent.com">
+          // TODO : Move clientId to .env
+          <GoogleOAuthProvider clientId="438457942075-g4mee6588muq3jmp4qfgqhgl82baan5p.apps.googleusercontent.com">
             <div>
               <h1>Google Authentication</h1>
               <GoogleLogin
