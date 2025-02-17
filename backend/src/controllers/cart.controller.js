@@ -5,6 +5,16 @@ import { Cart } from "../models/cart.model.js";
 
 const getCart = asyncHandler(async (req, res) => {
     const cart = await Cart.findOne({ owner: req.user._id });
+
+    if (!cart) {
+        throw new ApiError(404, "Cart not found");
+    }
+
+    return res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        data: cart,
+        message: "Cart fetched successfully"
+    }));
 });
 
 const addToCart = asyncHandler(async (req, res) => {
@@ -33,7 +43,11 @@ const addToCart = asyncHandler(async (req, res) => {
     }
 
     await cart.save();
-    return res.status(200).json(new ApiResponse(200, cart, "Product added to cart successfully"));
+    return res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        data: cart,
+        message: "Product added to cart successfully"
+    }));
 });
 
 const removeFromCart = asyncHandler(async (req, res) => {
@@ -52,7 +66,11 @@ const removeFromCart = asyncHandler(async (req, res) => {
     cart.products = cart.products.filter(product => product.product.toString() !== productId);
     await cart.save();
 
-    return res.status(200).json(new ApiResponse(200, cart, "Product removed from cart successfully"));
+    return res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        data: cart,
+        message: "Product removed from cart successfully"
+    }));
 });
 
 const updateQuantityOfProduct = asyncHandler(async (req, res) => {
@@ -75,7 +93,11 @@ const updateQuantityOfProduct = asyncHandler(async (req, res) => {
     }
 
     await cart.save();
-    return res.status(200).json(new ApiResponse(200, cart, "Product quantity updated successfully"));
+    return res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        data: cart,
+        message: "Product quantity updated successfully"
+    }));
 });
 
 export { getCart, addToCart, removeFromCart, updateQuantityOfProduct };
