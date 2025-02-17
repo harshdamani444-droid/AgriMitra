@@ -4,10 +4,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Cart } from "../models/cart.model.js";
 
 const getCart = asyncHandler(async (req, res) => {
-    const cart = await Cart.findOne({ owner: req.user._id });
+    let cart = await Cart.findOne({ owner: req.user._id });
 
     if (!cart) {
-        throw new ApiError(404, "Cart not found");
+        cart = await Cart.create({ owner: req.user._id });
     }
 
     return res.status(200).json(new ApiResponse({
