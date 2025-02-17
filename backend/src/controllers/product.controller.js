@@ -198,6 +198,18 @@ const deleteProductById = asyncHandler(async (req, res) => {
 });
 
 const updateProductById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new ApiError(400, "Please provide product id");
+  }
+
+  const oldProduct = await Product.findById(id);
+
+  if (!oldProduct) {
+    throw new ApiError(404, "Product not found");
+  }
+
   let {
     farmName,
     description,
@@ -234,18 +246,20 @@ const updateProductById = asyncHandler(async (req, res) => {
   }
 
   // create product
-  const product = await Product.create({
-    farmer: req.user._id,
-    farmName,
-    description: description || "",
-    price,
-    category,
-    quantity,
-    size,
-    unitOfSize,
-    address,
-    images: imageURL.map((res) => res.url),
-  });
+  const product = await Product.findByIdAndUpdate(
+    id,
+    {
+      farmName: farmName || oldProduct.farmName,
+      description: description || oldProduct.description,
+      price: price || oldProduct.price,
+      category: category || oldProduct.category,
+      quantity: quantity || oldProduct.quantity,
+      size: size || oldProduct.size,
+      unitOfSize: unitOfSize || oldProduct.unitOfSize,
+      address: address || oldProduct.address,
+    },
+    { new: true }
+  );
 
   // return product
   return res.status(201).json(

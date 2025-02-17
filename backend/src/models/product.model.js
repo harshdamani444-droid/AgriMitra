@@ -38,6 +38,11 @@ const productSchema = new mongoose.Schema(
       enum: UNIT_OF_SIZE,
       required: true,
     },
+    category: {
+      type: String,
+      enum: CROP_CATEGORY,
+      required: true,
+    },
     address: {
       houseNo: {
         type: String,
