@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../redux/slices/authSlice";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"
+import { loginUser, setUser } from "../redux/slices/authSlice";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 
 const Login = () => {
@@ -18,12 +18,7 @@ const Login = () => {
   };
 
   const handleLoginSuccess = async (credentialResponse) => {
-
-    console.log("credentialResponse", credentialResponse);
-
     const token = credentialResponse.credential;
-
-    console.log("token", token);
 
     if (!token) {
       console.error("No token received");
@@ -31,8 +26,10 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:4000/api/v1/user/googleVerify", { token });
-      console.log("User info:", response.data.user);
+      const response = await axios
+        .post("http://localhost:4000/api/v1/user/googleVerify", { token })
+        .then((res) => res.data);
+      dispatch(setUser(response.data));
     } catch (error) {
       console.error("Error verifying token:", error);
     }
@@ -156,7 +153,8 @@ const Login = () => {
             </div>
           </div>
 
-          <GoogleOAuthProvider clientId="294818588293-rlh6b2gk5i2qv31tdttv6de7i0tirogd.apps.googleusercontent.com">
+          // TODO : Move clientId to .env
+          <GoogleOAuthProvider clientId="438457942075-g4mee6588muq3jmp4qfgqhgl82baan5p.apps.googleusercontent.com">
             <div>
               <h1>Google Authentication</h1>
               <GoogleLogin
@@ -165,7 +163,6 @@ const Login = () => {
               />
             </div>
           </GoogleOAuthProvider>
-
         </div>
       </div>
     </div>

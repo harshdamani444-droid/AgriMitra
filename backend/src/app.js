@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import { logger } from "./utils/logger.js";
+import { ApiResponse } from "./utils/ApiResponse.js";
 
 const app = express();
 
@@ -31,12 +33,43 @@ app.use(express.static("public"));
 
 app.use(cookieParser());
 
+// Middleware to log each request
+app.use((req, res, next) => {
+  logger.info({
+    message: "Incoming request",
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+  });
+  next();
+});
+
 // routes import
 import userRoutes from "./routes/user.routes.js";
+import productRoutes from "./routes/product.routes.js";
 
 import cartRoutes from "./routes/cart.routes.js";
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/product", productRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  logger.error({
+    message: err.message,
+    status: err.statusCode || 500,
+    stack: err.stack,
+  });
+
+  res.status(err.statusCode || 500).json(
+    new ApiResponse({
+      statusCode: err.statusCode || 500,
+      message: err.message,
+      data: null,
+      success: false,
+    })
+  );
+});
 
 export { app };
