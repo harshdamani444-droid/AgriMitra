@@ -257,4 +257,13 @@ const updateProductById = asyncHandler(async (req, res) => {
   );
 });
 
-export { createProduct };
+export {
+  createProduct,
+  getAllProduct,
+  getProductByCategory,
+  getProductBetweenPriceRange,
+  getProductById,
+  getProductByFarmer,
+  deleteProductById,
+  updateProductById,
+};
