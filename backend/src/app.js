@@ -48,7 +48,10 @@ app.use((req, res, next) => {
 import userRoutes from "./routes/user.routes.js";
 import productRoutes from "./routes/product.routes.js";
 
+import cartRoutes from "./routes/cart.routes.js";
+
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
 
 // Error handling middleware
