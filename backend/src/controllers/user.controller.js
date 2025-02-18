@@ -78,7 +78,9 @@ const registerUser = asyncHandler(async (req, res) => {
   // set cookies
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   };
 
   // send response
@@ -127,8 +129,8 @@ const loginUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: false,
-    sameSite: 'None',
-    domain: 'localhost',
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   };
 
   // send response
@@ -143,11 +145,13 @@ const loginUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse({
-      statusCode: 200,
-      data: userResponse,
-      message: "User logged in successfully",
-    }));
+    .json(
+      new ApiResponse({
+        statusCode: 200,
+        data: userResponse,
+        message: "User logged in successfully",
+      })
+    );
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -207,7 +211,6 @@ const updateAvatar = asyncHandler(async (req, res) => {
   // get user from request
   const user = req.user;
 
-
   // upload avatar to cloudinary
   const avatarLocalPath = req?.files?.avatar?.[0]?.path;
   const avatarResponse = await uploadOnCloudinary(avatarLocalPath);
@@ -264,7 +267,9 @@ const googleOAuth = asyncHandler(async (req, res) => {
 
         const options = {
           httpOnly: true,
-          secure: true,
+          secure: false,
+          sameSite: "strict",
+          maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         };
 
         return res
@@ -299,7 +304,9 @@ const googleOAuth = asyncHandler(async (req, res) => {
 
         const options = {
           httpOnly: true,
-          secure: true,
+          secure: false,
+          sameSite: "strict",
+          maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         };
 
         return res
