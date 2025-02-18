@@ -6,7 +6,9 @@ export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async (credentials, thunkAPI) => {
         try {
-            const response = await axios.post(`${API_URL}/user/login`, credentials);
+            const response = await axios.post(`${API_URL}/user/login`, credentials, {
+                withCredentials: true,
+            });
             return response.data;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response.data);
@@ -20,8 +22,29 @@ export const signupUser = createAsyncThunk(
     async (userData, thunkAPI) => {
         try {
             console.log(userData);
-            const response = await axios.post(`${API_URL}/user/register`, userData);
+            const response = await axios.post(`${API_URL}/user/register`, userData, {
+                withCredentials: true
+            });
 
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const updateAvatar = createAsyncThunk(
+    '/user/update-avatar',
+    async (formData, thunkAPI) => {
+        try {
+            const response = await axios.patch(
+                `${API_URL}/user/update-avatar`,
+                formData,
+                {
+                    withCredentials: true, // Ensure cookies are sent with the request
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                }
+            );
             return response.data;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response.data);
@@ -49,7 +72,6 @@ const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-
             .addCase(loginUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -74,7 +96,23 @@ const authSlice = createSlice({
             .addCase(signupUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            .addCase(updateAvatar.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            }
+            )
+            .addCase(updateAvatar.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.data;
+            })
+            .addCase(updateAvatar.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
+
+
+
     },
 });
 

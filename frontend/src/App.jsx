@@ -7,6 +7,8 @@ import News from "./pages/News";
 import Weather from "./pages/Weather";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import Error from "./pages/Error";
+import Profile from "./pages/Profile";
 function App() {
   return (
     <Router>
@@ -20,6 +22,8 @@ function App() {
             <Route path="/weather" element={<Weather />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="*" element={<Error />} />
           </Routes>
         </div>
         <Footer />

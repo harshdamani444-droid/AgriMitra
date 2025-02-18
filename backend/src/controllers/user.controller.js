@@ -126,7 +126,9 @@ const loginUser = asyncHandler(async (req, res) => {
   // set cookies
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: 'None',
+    domain: 'localhost',
   };
 
   // send response
@@ -141,7 +143,11 @@ const loginUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, userResponse, "User logged in successfully"));
+    .json(new ApiResponse({
+      statusCode: 200,
+      data: userResponse,
+      message: "User logged in successfully",
+    }));
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -200,6 +206,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
 
   // get user from request
   const user = req.user;
+
 
   // upload avatar to cloudinary
   const avatarLocalPath = req?.files?.avatar?.[0]?.path;

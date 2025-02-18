@@ -154,6 +154,12 @@ const Login = () => {
           // TODO : Move clientId to .env
           <GoogleOAuthProvider clientId="438457942075-g4mee6588muq3jmp4qfgqhgl82baan5p.apps.googleusercontent.com">
             <div>
+              <Link
+                to="/profile"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-green-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Profile
+              </Link>
               <h1>Google Authentication</h1>
               <GoogleLogin
                 onSuccess={handleLoginSuccess}
