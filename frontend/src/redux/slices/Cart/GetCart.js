@@ -105,6 +105,12 @@ const cartSlice = createSlice({
         loading: false,
         error: null,
     },
+    reducers: {
+        resetCart: (state) => {
+            state.products = [];
+        },
+    },
+
     extraReducers: (builder) => {
         // Get Cart
         builder.addCase(getCartProducts.pending, (state) => {
@@ -137,5 +143,6 @@ const cartSlice = createSlice({
         });
     },
 });
+export const { resetCart } = cartSlice.actions;
 
 export default cartSlice.reducer;
