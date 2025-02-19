@@ -6,6 +6,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { roles } from "../constants.js";
 import { OAuth2Client } from "google-auth-library";
 import { sendMail } from "../utils/sendMail.js";
+import crypto from "crypto";
 
 const generateAccessAndRefreshToken = async (user) => {
   try {
@@ -376,9 +377,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   // save reset token and expiry in db
   user.resetPasswordToken = resetToken;
-  await user.save({
-    validateBeforeSave: false,
-  });
+  await user.save();
 
   // send email with reset token
   const resetUrl = `${process.env.FRONTEND_URL}:${process.env.FRONTEND_PORT}/reset-password/${resetToken}`;
@@ -402,7 +401,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   try {
     await sendMail({
       to: user.email,
-      subject: "Reset Password - BlogHorizon",
+      subject: "Reset Password - Agrimitra",
       content: htmlContent,
       isHtml: true,
     });
@@ -462,9 +461,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordTokenExpiry = undefined;
-  await user.save({
-    validateBeforeSave: false,
-  });
+  await user.save();
 
   // return response
   return res.status(200).json(
