@@ -6,13 +6,19 @@ import { logger } from "./utils/logger.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
 
 const app = express();
+// CORS options on the backend
+const corsOptions = {
+  origin: 'http://localhost:5173', // Match the frontend origin
+  credentials: true, // Allow sending cookies
+};
+app.use(cors(corsOptions));
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN,
+//     credentials: true,
+//   })
+// );
 
 app.use(bodyParser.json());
 

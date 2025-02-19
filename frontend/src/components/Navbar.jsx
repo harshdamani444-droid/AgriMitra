@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Sprout,
   ShoppingCart,
@@ -9,14 +9,31 @@ import {
   Menu,
   X,
   House,
+  Home,
+  User,
 } from "lucide-react";
+import { useAuth } from "../hooks/useAuth"; // Assuming you have this custom hook
+import UserDropdown from "./UserDropdown";
+import { useSelector } from "react-redux";
+import { use } from "react";
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State to manage dropdown visibility
+  const [isProfileOpen, setIsProfileOpen] = useState(false); // State to manage dropdown visibility
 
+  const { user } = useAuth(); // Getting the user from auth context
+  const navigate = useNavigate();
+  const { products } = useSelector((state) => state.cartItems);
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setIsMenuOpen(!isMenuOpen); // Toggle menu visibility
   };
+  const isProfileOpenToggle = () => {
+    setIsProfileOpen(!isProfileOpen); // Toggle profile menu visibility
+  };
+  var cartItemsCount = products.length;
+  useEffect(() => {
+    cartItemsCount = products.length;
+  }, [products]);
 
   return (
     <nav className="bg-green-800 text-white shadow-lg">
@@ -60,9 +77,43 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Link to="/login" className="hover:text-green-200">
-              <UserCircle className="h-6 w-6" />
+            <Link to="/cart" className="relative">
+              <button className="hover:text-green-200 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600">
+                <ShoppingCart className="h-6 w-6" />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )}
+              </button>
             </Link>
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={isProfileOpenToggle}
+                  className="flex items-center space-x-2"
+                >
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <User className="w-8 h-8 text-gray-400" />
+                  )}
+                </button>
+                <UserDropdown
+                  isOpen={isProfileOpen} // Pass isOpen prop to UserDropdown
+                  onClose={() => setIsProfileOpen(false)} // Close the menu when clicking outside
+                />
+              </div>
+            ) : (
+              <Link to="/login" className="hover:text-green-200">
+                <UserCircle className="h-6 w-6" />
+              </Link>
+            )}
+
             {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600"
@@ -93,30 +144,21 @@ const Navbar = () => {
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-700"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <div className="flex items-center space-x-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span>Shop</span>
-                </div>
+                Shop
               </Link>
               <Link
                 to="/weather"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-700"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <div className="flex items-center space-x-2">
-                  <Sun className="h-5 w-5" />
-                  <span>Weather</span>
-                </div>
+                Weather
               </Link>
               <Link
                 to="/news"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-700"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <div className="flex items-center space-x-2">
-                  <Newspaper className="h-5 w-5" />
-                  <span>News</span>
-                </div>
+                News
               </Link>
             </div>
           </div>
