@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   ArrowRight,
   Leaf,
@@ -11,8 +11,14 @@ import {
   Phone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getCartProducts } from "../redux/slices/Cart/GetCart";
 
 const Home = () => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getCartProducts());
+  }, [dispatch]);
   return (
     <div className="flex flex-col">
       <div

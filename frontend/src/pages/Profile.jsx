@@ -1,7 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
-import { Camera, Save } from "lucide-react";
+import { Camera, Save, Sprout } from "lucide-react";
 import { useState } from "react";
 import { updateAvatar } from "../redux/slices/authSlice";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const profile = useSelector((state) => state.auth.user);
@@ -28,18 +30,26 @@ const Profile = () => {
         ...formData,
         avatar: file,
       });
-      console.log(formData);
     }
   };
-  const handleSave = () => {
-    dispatch(updateAvatar(formData));
+  const handleSave = async () => {
+    const response = await dispatch(updateAvatar(formData));
+    if (updateAvatar.fulfilled.match(response)) {
+      toast.success("Avatar updated successfully");
+    } else {
+      toast.error("Avatar update failed");
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="relative h-48 bg-green-600">
+          <div className="relative h-48 bg-green-600 flex items-center justify-center text-white font-bold">
+            <Link to="/" className="flex items-center space-x-2">
+              <Sprout className="h-14 w-14" />
+              <span className="text-5xl font-bold">Agrimitra</span>
+            </Link>
             <div className="absolute -bottom-16 left-8">
               <div className="relative">
                 <img

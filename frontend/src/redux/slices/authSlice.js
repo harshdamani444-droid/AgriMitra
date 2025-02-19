@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import Cookies from "js-cookie";
 const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
@@ -16,7 +18,6 @@ export const loginUser = createAsyncThunk(
     }
 );
 
-// Async thunk for signup
 export const signupUser = createAsyncThunk(
     'auth/signupUser',
     async (userData, thunkAPI) => {
@@ -52,6 +53,71 @@ export const updateAvatar = createAsyncThunk(
     }
 );
 
+export const completeProfile = createAsyncThunk(
+    '/user/complete-profile',
+    async (userData, thunkAPI) => {
+        try {
+            console.log(userData);
+            const response = await axios.patch(
+                `${API_URL}/user/complete-profile`,
+                userData,
+                {
+                    withCredentials: true,
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+export const getUser = createAsyncThunk(
+    '/user/get-user',
+    async (_, thunkAPI) => {
+        try {
+            const response = await axios.get(`${API_URL}/user/current-user`, {
+                withCredentials: true,
+            });
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const forgetPassword = createAsyncThunk(
+    '/user/forget-password',
+    async (email, thunkAPI) => {
+        console.log(email);
+        try {
+            const response = await axios.post(
+                `${API_URL}/user/forgot-password`,
+                email,
+                {
+                    withCredentials: true,
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const logoutUser = createAsyncThunk(
+    '/user/logout',
+    async (_, thunkAPI) => {
+        try {
+            const response = await axios.post(`${API_URL}/user/logout`, {}, {
+                withCredentials: true,
+            });
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
+
 
 const authSlice = createSlice({
     name: 'auth',
@@ -61,9 +127,13 @@ const authSlice = createSlice({
         error: null,
     },
     reducers: {
-        logout: (state) => {
-            state.user = null;
-        },
+        // logout: (state) => {
+
+        //     state.user = null;
+        //     console.log("Logging out");
+        //     Cookies.remove("accessToken");
+        //     Cookies.remove("refreshToken");
+        // },
         setUser: (state, action) => {
             state.user = action.payload;
             state.loading = false;
@@ -97,11 +167,11 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            // Update Avatar
             .addCase(updateAvatar.pending, (state) => {
                 state.loading = true;
                 state.error = null;
-            }
-            )
+            })
             .addCase(updateAvatar.fulfilled, (state, action) => {
                 state.loading = false;
                 state.user = action.payload.data;
@@ -109,10 +179,58 @@ const authSlice = createSlice({
             .addCase(updateAvatar.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            // Complete Profile
+            .addCase(completeProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(completeProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.data;
+            })
+            .addCase(completeProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action
+            })
+            // Forget Password
+            .addCase(forgetPassword.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(forgetPassword.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(forgetPassword.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            // Get User
+            .addCase(getUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUser.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.data;
+            })
+            .addCase(getUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            // Logout
+            .addCase(logoutUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(logoutUser.fulfilled, (state) => {
+                state.loading = false;
+                state.user = null;
+            })
+            .addCase(logoutUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
-
-
-
     },
 });
 

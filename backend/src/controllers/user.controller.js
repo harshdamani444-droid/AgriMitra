@@ -166,7 +166,9 @@ const logoutUser = asyncHandler(async (req, res) => {
   // clear cookies
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7
   };
 
   // send response
@@ -389,10 +391,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
   await user.save({
     validateBeforeSave: false,
   });
-
   // send email with reset token
   const resetUrl = `${process.env.FRONTEND_URL}:${process.env.FRONTEND_PORT}/reset-password/${resetToken}`;
-
   const htmlContent = `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;">
   <h2 style="text-align: center; color: #333;">Password Reset Request</h2>
@@ -412,7 +412,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   try {
     await sendMail({
       to: user.email,
-      subject: "Reset Password - BlogHorizon",
+      subject: "Reset Password - AgriMitra",
       content: htmlContent,
       isHtml: true,
     });

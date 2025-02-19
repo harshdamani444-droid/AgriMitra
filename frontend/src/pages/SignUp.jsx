@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserPlus } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { signupUser } from "../redux/slices/authSlice";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const { loading, error, user } = useSelector((state) => state.auth);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -15,17 +16,25 @@ const SignUp = () => {
     confirmPassword: "",
     phoneNumber: "",
     avatar: null,
-    role: "farmer",
+    role: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData);
     const formDataToSend = new FormData();
     for (let key in formData) {
       formDataToSend.append(key, formData[key]);
     }
     console.log(formDataToSend);
-    dispatch(signupUser(formDataToSend));
+    const resultAction = await dispatch(signupUser(formDataToSend));
+    if (signupUser.fulfilled.match(resultAction)) {
+      console.log("User sign up successful");
+      toast.success("Sign up successful");
+      navigate("/");
+    } else {
+      toast.error("Sign up failed");
+    }
   };
 
   const handleChange = (e) => {
@@ -155,6 +164,20 @@ const SignUp = () => {
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Role
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-md"
+              >
+                <option value="buyer">Buyer</option>
+                <option value="farmer">Farmer</option>
+              </select>
             </div>
             <div>
               <label
