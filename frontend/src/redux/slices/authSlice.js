@@ -118,6 +118,22 @@ export const logoutUser = createAsyncThunk(
     }
 );
 
+export const resetPassword = createAsyncThunk(
+    '/user/reset-password',
+    async ({ id, newPassword, confirmPassword }, thunkAPI) => {
+        try {
+            const response = await axios.post(`${API_URL}/user/reset-password/${id}`, {
+                password: newPassword,
+                confirmPassword
+            }, {
+                withCredentials: true,
+            });
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data);
+        }
+    }
+);
 
 const authSlice = createSlice({
     name: 'auth',
@@ -230,7 +246,21 @@ const authSlice = createSlice({
             .addCase(logoutUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            // Reset Password
+            .addCase(resetPassword.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(resetPassword.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(resetPassword.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
+
+
     },
 });
 

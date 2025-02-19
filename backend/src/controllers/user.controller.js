@@ -441,7 +441,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
   // get reset token from frontend
   const resetToken = req?.params?.resetToken;
-
   if (!resetToken) {
     throw new ApiError(400, "Reset token is required");
   }
@@ -462,8 +461,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   }
 
   // update password
+  console.log(req.body)
   const { password, confirmPassword } = req?.body;
-
+  console.log(password);
+  console.log(confirmPassword)
   if (!password && !confirmPassword) {
     throw new ApiError(400, "Password and passwordConfirm are required");
   }

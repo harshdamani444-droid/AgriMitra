@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus } from "lucide-react";
@@ -8,7 +8,6 @@ import {
   updateQuantity,
 } from "../redux/slices/Cart/GetCart";
 import { toast } from "react-toastify";
-
 const Cart = () => {
   const dispatch = useDispatch();
   const { products } = useSelector((state) => state.cartItems);
@@ -16,6 +15,9 @@ const Cart = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+  useEffect(() => {
+    dispatch(getCartProducts());
+  }, [dispatch, products.length]);
   const shipping = 100; // fixed    shipping cost
   const total = subtotal + shipping;
   const removeItem = async (id) => {

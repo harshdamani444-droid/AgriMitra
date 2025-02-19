@@ -1,22 +1,35 @@
 import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { resetPassword } from "../redux/slices/authSlice";
 import { Lock } from "lucide-react";
 import { toast } from "react-toastify";
 
 const ResetPassword = () => {
+  const { id } = useParams(); // Get user ID from URL params
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const loading = useSelector((state) => state.auth.loading);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
-    console.log("Password reset successfully");
-    setError("");
+    const resultAccess = await dispatch(
+      resetPassword({ id, newPassword, confirmPassword })
+    );
+    if (resetPassword.fulfilled.match(resultAccess)) {
+      toast.success("Password reset successfully");
+      navigate("/login");
+    } else {
+      toast.error("Failed to reset password");
+    }
   };
 
   return (
@@ -59,14 +72,12 @@ const ResetPassword = () => {
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-
             <div>
               <button
                 type="submit"
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
-                Reset Password
+                {loading ? "Resetting..." : "Reset Password"}
               </button>
             </div>
           </form>
