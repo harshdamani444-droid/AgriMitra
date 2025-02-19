@@ -49,6 +49,6 @@ router.route("/complete-profile").patch(verifyJWT, completeProfile);
 
 router.route("/forgot-password").post(forgotPassword);
 
-router.route("/reset-password").post(resetPassword);
+router.route("/reset-password/:resetToken").post(resetPassword);
 
 export default router;
