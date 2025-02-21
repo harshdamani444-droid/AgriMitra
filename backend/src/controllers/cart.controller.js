@@ -14,24 +14,20 @@ const getCart = asyncHandler(async (req, res) => {
         from: "products",
         localField: "products.product",
         foreignField: "_id",
-        as: "products",
+        as: "products_detail",
         pipeline: [
           {
             $project: {
               _id: 1,
               farmName: 1,
-              images: 1,
               description: 1,
               price: 1,
-              ratings: 1,
-              category: 1,
               size: 1,
-              farmer: 1,
               unitOfSize: 1,
-              quantity: 1,
-            },
-          },
-        ],
+              images: 1,
+            }
+          }
+        ]
       },
     },
   ]);
@@ -41,6 +37,18 @@ const getCart = asyncHandler(async (req, res) => {
   }
 
   cart = cart[0];
+
+
+  cart.products.map((product, i) => {
+    product.farmName = cart.products_detail[i].farmName;
+    product.images = cart.products_detail[i].images;
+    product.description = cart.products_detail[i].description;
+    product.price = cart.products_detail[i].price;
+    product.size = cart.products_detail[i].size;
+    product.unitOfSize = cart.products_detail[i].unitOfSize;
+  })
+
+  cart.products_detail = undefined;
 
   return res.status(200).json(
     new ApiResponse({

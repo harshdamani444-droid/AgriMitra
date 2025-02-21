@@ -21,6 +21,8 @@ import { useEffect } from "react";
 import { getCartProducts } from "./redux/slices/Cart/GetCart";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import ChatBot from "./pages/ChatBot"
+
 function App() {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -56,6 +58,7 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="*" element={<Error />} />
+            <Route path="/chat" element={<ChatBot />} />
           </Routes>
         </div>
         <Footer />
