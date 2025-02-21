@@ -1,20 +1,29 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, setUser } from "../redux/slices/authSlice";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { toast } from "react-toastify";
+
 import axios from "axios";
 
 const Login = () => {
+  const navaigate = useNavigate();
   const dispatch = useDispatch();
   const { loading, error, user } = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password }));
+    const resultAction = await dispatch(loginUser({ email, password }));
+    if (loginUser.fulfilled.match(resultAction)) {
+      toast.success("Login successful");
+      navaigate("/");
+    } else {
+      toast.error("Login failed");
+    }
   };
 
   const handleLoginSuccess = async (credentialResponse) => {
@@ -27,9 +36,14 @@ const Login = () => {
 
     try {
       const response = await axios
-        .post("http://localhost:4000/api/v1/user/googleVerify", { token })
+        .post(
+          "http://localhost:4000/api/v1/user/googleVerify",
+          { token },
+          { withCredentials: true }
+        )
         .then((res) => res.data);
       dispatch(setUser(response.data));
+      navaigate("/complete-profile");
     } catch (error) {
       console.error("Error verifying token:", error);
     }
@@ -112,12 +126,12 @@ const Login = () => {
               </div>
 
               <div className="text-sm">
-                <a
-                  href="#"
+                <Link
+                  to="/forgot-password"
                   className="font-medium text-green-600 hover:text-green-500"
                 >
                   Forgot your password?
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -130,7 +144,6 @@ const Login = () => {
               </button>
             </div>
           </form>
-
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -152,17 +165,19 @@ const Login = () => {
               </Link>
             </div>
           </div>
-
-          // TODO : Move clientId to .env
-          <GoogleOAuthProvider clientId="438457942075-g4mee6588muq3jmp4qfgqhgl82baan5p.apps.googleusercontent.com">
-            <div>
-              <h1>Google Authentication</h1>
-              <GoogleLogin
-                onSuccess={handleLoginSuccess}
-                onError={handleLoginFailure}
-              />
-            </div>
-          </GoogleOAuthProvider>
+          <div className="mt-6 flex justify-center">
+            <GoogleOAuthProvider
+              clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+            >
+              <div>
+                <GoogleLogin
+                  className="w-full"
+                  onSuccess={handleLoginSuccess}
+                  onError={handleLoginFailure}
+                />
+              </div>
+            </GoogleOAuthProvider>
+          </div>
         </div>
       </div>
     </div>

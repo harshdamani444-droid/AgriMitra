@@ -6,6 +6,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { roles } from "../constants.js";
 import { OAuth2Client } from "google-auth-library";
 import { sendMail } from "../utils/sendMail.js";
+import crypto from "crypto";
 
 const generateAccessAndRefreshToken = async (user) => {
   try {
@@ -78,7 +79,9 @@ const registerUser = asyncHandler(async (req, res) => {
   // set cookies
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   };
 
   // send response
@@ -126,7 +129,9 @@ const loginUser = asyncHandler(async (req, res) => {
   // set cookies
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   };
 
   // send response
@@ -141,7 +146,12 @@ const loginUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, userResponse, "User logged in successfully"));
+    .json(new ApiResponse({
+      statusCode: 200,
+      data: userResponse,
+      message: "User logged in successfully",
+    }));
+
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -156,7 +166,9 @@ const logoutUser = asyncHandler(async (req, res) => {
   // clear cookies
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7
   };
 
   // send response
@@ -257,7 +269,9 @@ const googleOAuth = asyncHandler(async (req, res) => {
 
         const options = {
           httpOnly: true,
-          secure: true,
+          secure: false,
+          sameSite: "strict",
+          maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         };
 
         return res
@@ -292,7 +306,9 @@ const googleOAuth = asyncHandler(async (req, res) => {
 
         const options = {
           httpOnly: true,
-          secure: true,
+          secure: false,
+          sameSite: "strict",
+          maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         };
 
         return res
@@ -372,13 +388,12 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   // save reset token and expiry in db
   user.resetPasswordToken = resetToken;
-  await user.save({
-    validateBeforeSave: false,
-  });
+
+  await user.save();
+
 
   // send email with reset token
   const resetUrl = `${process.env.FRONTEND_URL}:${process.env.FRONTEND_PORT}/reset-password/${resetToken}`;
-
   const htmlContent = `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;">
   <h2 style="text-align: center; color: #333;">Password Reset Request</h2>
@@ -398,7 +413,9 @@ const forgotPassword = asyncHandler(async (req, res) => {
   try {
     await sendMail({
       to: user.email,
-      subject: "Reset Password - BlogHorizon",
+
+      subject: "Reset Password - Agrimitra",
+
       content: htmlContent,
       isHtml: true,
     });
@@ -424,7 +441,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
   // get reset token from frontend
   const resetToken = req?.params?.resetToken;
-
   if (!resetToken) {
     throw new ApiError(400, "Reset token is required");
   }
@@ -445,8 +461,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   }
 
   // update password
+  console.log(req.body)
   const { password, confirmPassword } = req?.body;
-
+  console.log(password);
+  console.log(confirmPassword)
   if (!password && !confirmPassword) {
     throw new ApiError(400, "Password and passwordConfirm are required");
   }
@@ -458,9 +476,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordTokenExpiry = undefined;
-  await user.save({
-    validateBeforeSave: false,
-  });
+  await user.save();
 
   // return response
   return res.status(200).json(
