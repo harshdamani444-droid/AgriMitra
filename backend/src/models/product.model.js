@@ -38,6 +38,10 @@ const productSchema = new mongoose.Schema(
       enum: UNIT_OF_SIZE,
       required: true,
     },
+    quantity: {
+      type: Number,
+      required: true,
+    },
     category: {
       type: String,
       enum: CROP_CATEGORY,
