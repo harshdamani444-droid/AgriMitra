@@ -253,6 +253,7 @@ const googleOAuth = asyncHandler(async (req, res) => {
 
     const payload = ticket.getPayload();
 
+
     if (payload?.email_verified) {
       const user = await User.findOne({ email: payload?.email });
 

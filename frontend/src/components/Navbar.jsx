@@ -11,6 +11,7 @@ import {
   House,
   Home,
   User,
+  BotMessageSquare,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth"; // Assuming you have this custom hook
 import UserDropdown from "./UserDropdown";
@@ -77,8 +78,11 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+            <Link to="/chat" className="hover:text-green-200">
+              <BotMessageSquare className="h-6 w-6" />
+            </Link>
             <Link to="/cart" className="relative">
-              <button className="hover:text-green-200 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600">
+              <button className="hover:text-green-200 p-1 rounded-full  focus:outline-none focus:ring-2 focus:ring-green-600">
                 <ShoppingCart className="h-6 w-6" />
                 {cartItemsCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">

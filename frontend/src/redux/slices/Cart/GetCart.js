@@ -44,6 +44,7 @@ export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async (productId, thunkAPI) => {
     try {
+      console.log(productId);
       await axios.delete(`${API_URL}/cart/remove-from-cart`, {
         data: { productId },
         withCredentials: true,
@@ -76,35 +77,6 @@ export const updateQuantity = createAsyncThunk(
     }
   }
 );
-
-const getProductById = async (id) => {
-  try {
-    const response = await axios.get(
-      `${API_URL}/product/get-product-by-id/${id}`
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    return {};
-  }
-};
-
-const makeNewArray = async (productArray) => {
-  try {
-    const products = await Promise.all(
-      productArray.map(async (item) => {
-        const product = await getProductById(item.product);
-        product.quantity = item.quantity;
-        return product;
-      })
-    );
-
-    return products;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return [];
-  }
-};
 
 const cartSlice = createSlice({
   name: "cart",

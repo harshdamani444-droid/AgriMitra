@@ -15,10 +15,31 @@ const Cart = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+  const handleDecrement = async (productId, quantity) => {
+    const res = await dispatch(
+      updateQuantity({
+        productId: productId,
+        quantity: Math.max(1, quantity - 1),
+      })
+    );
+    dispatch(getCartProducts());
+  };
+  const handleIncrement = async (productId, quantity) => {
+    const res = await dispatch(
+      updateQuantity({
+        productId: productId,
+        quantity: quantity + 1,
+      })
+    );
+    if (!updateQuantity.fulfilled.match(res)) {
+      toast.error("Out of stock");
+    }
+    dispatch(getCartProducts());
+  };
   useEffect(() => {
     dispatch(getCartProducts());
   }, [dispatch, products.length]);
-  const shipping = 100; // fixed    shipping cost
+  const shipping = 100;
   const total = subtotal + shipping;
   const removeItem = async (id) => {
     const resultAction = await dispatch(removeFromCart(id));
@@ -83,18 +104,16 @@ const Cart = () => {
                           {item.description}
                         </p>
                         <p className="mt-1 text-sm text-gray-500">
-                          Price: ₹{item.price}/{item.unitOfSize}
+                          Price: ₹{item.price}/packet
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Packet Size: {item.size} {item.unitOfSize}
                         </p>
                         <div className="mt-4 flex items-center justify-between">
                           <div className="flex items-center border rounded-md">
                             <button
                               onClick={() =>
-                                dispatch(
-                                  updateQuantity({
-                                    productId: item._id,
-                                    quantity: Math.max(1, item.quantity - 1),
-                                  })
-                                )
+                                handleDecrement(item.product, item.quantity)
                               }
                               className="p-2 hover:bg-gray-100"
                             >
@@ -103,15 +122,7 @@ const Cart = () => {
                             <span className="px-4 py-2">{item.quantity}</span>
                             <button
                               onClick={() =>
-                                dispatch(
-                                  updateQuantity({
-                                    productId: item._id,
-                                    quantity: Math.min(
-                                      item.quantity + 1,
-                                      item.size
-                                    ),
-                                  })
-                                )
+                                handleIncrement(item.product, item.quantity)
                               }
                               className="p-2 hover:bg-gray-100"
                             >
@@ -119,7 +130,7 @@ const Cart = () => {
                             </button>
                           </div>
                           <button
-                            onClick={() => dispatch(removeItem(item._id))}
+                            onClick={() => dispatch(removeItem(item.product))}
                             className="text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="h-5 w-5" />
