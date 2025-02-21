@@ -83,13 +83,17 @@ const Shop = () => {
 
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-green-600">
-                    ₹{product.price}/{product.unitOfSize}
+                    ₹{product.price}/packet
+                    <span className=" flex flex-col font-bold text-green-600">
+                      Packet Size: {product.size} {product.unitOfSize}
+                    </span>
                   </span>
+
                   <button
                     onClick={() => handleAddToCart(product._id)}
                     className="bg-green-600 text-white p-2 rounded-full hover:bg-green-700"
                   >
-                    <ShoppingCart className="h-5 w-5" />
+                    <ShoppingCart className="h-6 w-6" />
                   </button>
                 </div>
               </div>

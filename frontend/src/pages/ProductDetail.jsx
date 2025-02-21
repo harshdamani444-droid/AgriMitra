@@ -20,8 +20,7 @@ const ProductDetail = () => {
   const { product, loading } = useSelector((state) => state.productDetails);
   const [quantity, setQuantity] = useState(1);
   const increaseQuantity = () => {
-    console.log(product);
-    if (product.size <= quantity) return;
+    if (product.quantity <= quantity) return;
     const qty = quantity + 1;
     setQuantity(qty);
   };
@@ -103,6 +102,9 @@ const ProductDetail = () => {
               <span>Add to Cart</span>
             </button>
           </div>
+          <p className="text-lg text-gray-600 mb-2">
+            Quantity: {product?.quantity}
+          </p>
           <p className="text-lg text-gray-600 mb-2">
             Category: {product?.category}
           </p>
