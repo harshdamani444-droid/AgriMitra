@@ -2,15 +2,36 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Send } from "lucide-react";
 
+// ✅ Function to format bot responses using Tailwind classes
 const formatResponse = (response) => {
+  console.log(response);
   return response
-    .replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>")
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/~~(.*?)~~/g, "<del>$1</del>")
-    .replace(/=(.*?) link="(.*?)"/g, '<a href="$2" target="_blank">$1</a>')
-    .replace(/\n+/g, "<p></p>");
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong class="font-bold italic">$1</strong>') // Bold + Italic
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>') // Bold
+    .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>') // Italic
+    .replace(/~~(.*?)~~/g, '<del class="line-through">$1</del>') // Strikethrough
+    .replace(/=(.*?) link="(.*?)"/g, '<a href="$2" target="_blank" class="text-pink-500 hover:text-purple-500 transition-colors duration-300">$1</a>') // Links
+    .replace(/^(#{1,6})\s*(.*?)$/gm, (match, hash, content) => {
+      const level = hash.length; // Headers (h1 - h6)
+      return `<h${level} class="text-${level === 1 ? '3xl' : level === 2 ? '2xl' : level === 3 ? 'xl' : level === 4 ? 'lg' : level === 5 ? 'base' : 'sm'} font-bold my-2">${content}</h${level}>`;
+    })
+    .replace(/^\*\s+(.*)$/gm, '<ul class="list-disc pl-6 my-2"><li class="mb-1 text-sm leading-relaxed [font-size:15px]">$1</li></ul>') // Unordered List
+    .replace(/^1\.\s+(.*)$/gm, '<ol class="list-decimal pl-6 my-2"><li class="mb-1 text-sm leading-relaxed">$1</li></ol>') // Ordered List
+    .replace(/\n+/g, '<p class="my-2"></p>'); // Line breaks
 };
+
+
+// nisharg
+
+// const formatResponse = (response) => {
+//   return response
+//     .replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>")
+//     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+//     .replace(/\*(.*?)\*/g, "<em>$1</em>")
+//     .replace(/~~(.*?)~~/g, "<del>$1</del>")
+//     .replace(/=(.*?) link="(.*?)"/g, '<a href="$2" target="_blank">$1</a>')
+//     .replace(/\n+/g, "<p></p>");
+// };
 
 const ChatBot = () => {
   const [input, setInput] = useState("");
