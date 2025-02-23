@@ -52,16 +52,20 @@ app.use((req, res, next) => {
 
 // routes import
 import userRoutes from "./routes/user.routes.js";
+
 import productRoutes from "./routes/product.routes.js";
 
 import cartRoutes from "./routes/cart.routes.js";
 
 import chatRoutes from "./routes/chatbot.routes.js";
 
+import mlPredictRoutes from "./routes/ml_models.routes.js";
+
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/chatBot", chatRoutes);
+app.use("/api/v1/predict", mlPredictRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
