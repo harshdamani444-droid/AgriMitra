@@ -119,3 +119,11 @@ dist
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node
 .DS_Store
+
+# Ignore all CSV files
+*.csv
+
+# Ignore specific training scripts
+/ml-model/Crop_recommendation_model/crop_train_model.py
+/ml-model/Fertilizer_prediction_model/fertility_train_model.py
+/ml-model/Soil_fertility_prediction_model/soil_train_model.py
