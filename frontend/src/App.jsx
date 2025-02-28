@@ -21,7 +21,10 @@ import { useEffect } from "react";
 import { getCartProducts } from "./redux/slices/Cart/GetCart";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-import ChatBot from "./pages/ChatBot"
+import ChatBot from "./pages/ChatBot";
+import FertilityPrediction from "./components/FertilityPrediction";
+import CropPrediction from "./components/CropPrediction";
+import FertilizerPrediction from "./components/FertilizerPrediction";
 
 function App() {
   const dispatch = useDispatch();
@@ -59,6 +62,9 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="*" element={<Error />} />
             <Route path="/chat" element={<ChatBot />} />
+            <Route path="/fertility" element={<FertilityPrediction />} />
+            <Route path="/crop" element={<CropPrediction />} />
+            <Route path="/fertilizer" element={<FertilizerPrediction />} />
           </Routes>
         </div>
         <Footer />
