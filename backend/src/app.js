@@ -5,11 +5,23 @@ import bodyParser from "body-parser";
 import { logger } from "./utils/logger.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
 
+import rateLimit from "express-rate-limit";
+
+// Api Rate limiter
+export const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,            // 1 minutes
+  max: 2,                             // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+  headers: true,                      // Send rate limit headers
+});
+
+
 const app = express();
+
 // CORS options on the backend
 const corsOptions = {
-  origin: 'http://localhost:5173', // Match the frontend origin
-  credentials: true, // Allow sending cookies
+  origin: 'http://localhost:5173',  // Match the frontend origin
+  credentials: true,                // Allow sending cookies
 };
 app.use(cors(corsOptions));
 
@@ -61,11 +73,17 @@ import chatRoutes from "./routes/chatbot.routes.js";
 
 import mlPredictRoutes from "./routes/ml_models.routes.js";
 
+import Wishlist from "./routes/wishlist.routes.js";
+
+import ratings from "./routes/ratings.routes.js";
+
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/chatBot", chatRoutes);
-app.use("/api/v1/predict", mlPredictRoutes);
+app.use("/api/v1/predict", limiter, mlPredictRoutes);
+app.use("/api/v1/wishlist", Wishlist);
+app.use("/api/v1/ratings", ratings);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

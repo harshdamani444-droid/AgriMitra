@@ -12,15 +12,24 @@ const RESTRICTION_MESSAGE =
 const chat = asyncHandler(async (req, res) => {
     const { message, history } = req.body;
 
+    if (!message) {
+        throw new ApiError(400, "Message is required");
+    }
+
+    if (!history || !Array.isArray(history)) {
+        throw new ApiError(400, "History must be an array");
+    }
+
     // Format chat history for Gemini API
     const formattedHistory = history.map((msg) => ({
-        role: msg.role === "assistant" ? "model" : msg.role, // ✅ Fix here
-        parts: [{ text: msg.content }],
+        role: msg.role === "assistant" ? "model" : msg.role, 
+        parts: [{ text: msg.content + 'give response with emojis' }],
     }));
 
 
     // Append the new message to history
     formattedHistory.push({ role: "user", parts: [{ text: message }] });
+
 
     // Step 1: Get AI response
     const response = await axios.post(
@@ -70,6 +79,24 @@ export { chat };
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// For Debugging Chatbot Controller
+
+
 // import { asyncHandler } from "../utils/asyncHandler.js";
 // import { ApiError } from "../utils/ApiError.js";
 // import { ApiResponse } from "../utils/ApiResponse.js";
@@ -92,7 +119,7 @@ export { chat };
 //         // Format chat history for Gemini API
 //         // Format chat history for Gemini API
 //         const formattedHistory = history.map((msg) => ({
-//             role: msg.role === "assistant" ? "model" : msg.role, // ✅ Fix here
+//             role: msg.role === "assistant" ? "model" : msg.role,
 //             parts: [{ text: msg.content }],
 //         }));
 

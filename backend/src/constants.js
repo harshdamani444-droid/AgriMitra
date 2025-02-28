@@ -56,4 +56,7 @@ export const CROP_CATEGORY = [
   "Groundnut",
 ];
 
-export const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+
+// https://aistudio.google.com/u/4/apikey
+export const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
