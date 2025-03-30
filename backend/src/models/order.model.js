@@ -3,10 +3,6 @@ import { ORDER_STATUS } from "../constants.js";
 
 const orderSchema = new mongoose.Schema({
   paymentInfo: {},
-  orderValue: {
-    type: Number,
-    required: true,
-  },
   shippingInfo: {},
   shippingPrice: {
     type: Number,
@@ -17,9 +13,6 @@ const orderSchema = new mongoose.Schema({
     required: true,
     enum: ORDER_STATUS,
     default: "Pending",
-  },
-  delivedAt: {
-    type: Date,
   },
   orderItems: [
     {
@@ -33,14 +26,10 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
-  Consumer: {
+  consumer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-  farmer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-});
+}, { timestamps: true });
 
 export const Order = mongoose.model("Order", orderSchema);
