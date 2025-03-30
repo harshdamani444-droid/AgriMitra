@@ -25,6 +25,7 @@ import ChatBot from "./pages/ChatBot";
 import FertilityPrediction from "./components/FertilityPrediction";
 import CropPrediction from "./components/CropPrediction";
 import FertilizerPrediction from "./components/FertilizerPrediction";
+import TempPayment from "./components/TempPayment";
 
 function App() {
   const dispatch = useDispatch();
@@ -65,6 +66,7 @@ function App() {
             <Route path="/fertility" element={<FertilityPrediction />} />
             <Route path="/crop" element={<CropPrediction />} />
             <Route path="/fertilizer" element={<FertilizerPrediction />} />
+            <Route path="/tempPayment" element={<TempPayment />} />
           </Routes>
         </div>
         <Footer />

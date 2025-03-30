@@ -77,6 +77,8 @@ import Wishlist from "./routes/wishlist.routes.js";
 
 import ratings from "./routes/ratings.routes.js";
 
+import orderRoutes from "./routes/order.routes.js"
+
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
@@ -84,6 +86,7 @@ app.use("/api/v1/chatBot", chatRoutes);
 app.use("/api/v1/predict", limiter, mlPredictRoutes);
 app.use("/api/v1/wishlist", Wishlist);
 app.use("/api/v1/ratings", ratings);
+app.use("/api/v1/order", orderRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
