@@ -4,6 +4,8 @@ import { ORDER_STATUS } from "../constants.js";
 const orderSchema = new mongoose.Schema({
   paymentInfo: {},
   shippingInfo: {},
+  deliveryInfo: {},
+
   shippingPrice: {
     type: Number,
     required: true,

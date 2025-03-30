@@ -20,7 +20,6 @@ const createOrder = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(401, "Unauthorized", null);
   }
-
   // get cart from database
   let cart = await Cart.aggregate([
     {
@@ -108,14 +107,16 @@ const createOrder = asyncHandler(async (req, res) => {
   // get price from delivery partner
 
   // TODO: call delivery partner API to get price and time of delivery
-  const deliveryPrice = 500 * deliveryDetails.length; // 500 is the delivery price per product
+  const deliveryPrice = 100; // 500 is the delivery price per product
 
   // calculate total price
   let totalPrice = cart.products.reduce((acc, product) => {
     return acc + product.price * product.orderedQuantity;
   }, 0);
-
   totalPrice += deliveryPrice; // add delivery price to total price
+  // console.log(products);
+
+  const deliveryAddress = req.body;
 
   // create order in database
   const order = await Order.create({
@@ -124,7 +125,8 @@ const createOrder = asyncHandler(async (req, res) => {
       detail.status = "pending";
       return detail;
     }),
-    shippingPrice: deliveryPrice,
+    deliveryInfo: deliveryAddress,
+    shippingPrice: totalPrice,
     orderStatus: "Pending",
     consumer: user._id,
     orderItems: cart.products.map((product) => {
@@ -134,6 +136,7 @@ const createOrder = asyncHandler(async (req, res) => {
       };
     }),
   });
+  // console.log("order", order);
 
   // check if order is created successfully
   if (!order) {
@@ -166,7 +169,8 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   const ordersController = new OrdersController(client);
-
+  let totalPriceInUSD = totalPrice / 82; // convert INR to USD
+  let formattedNum = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPriceInUSD);
   const createOrder = async () => {
     const collect = {
       body: {
@@ -175,7 +179,7 @@ const createOrder = asyncHandler(async (req, res) => {
           {
             amount: {
               currencyCode: "USD",
-              value: "100.00",
+              value: formattedNum,
             },
           },
         ],

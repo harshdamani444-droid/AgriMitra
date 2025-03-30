@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { CreditCard, Truck, MapPin } from "lucide-react";
+import Payment from "../components/Payment";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -182,47 +183,7 @@ const Checkout = () => {
 
               {step === 2 && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold mb-6">
-                    Payment Information
-                  </h2>
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <MapPin className="h-5 w-5 text-gray-400 mr-2" />
-                        <div>
-                          <p className="font-medium">{shippingInfo.fullName}</p>
-                          <p className="text-sm text-gray-600">
-                            {shippingInfo.address}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {shippingInfo.city}, {shippingInfo.state} -{" "}
-                            {shippingInfo.pincode}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setStep(1)}
-                        className="text-green-600 hover:text-green-700"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  </div>
-                  {/* Payment form will be integrated with Stripe */}
-                  <div className="border rounded-md p-4">
-                    <h3 className="font-medium mb-4">Payment Method</h3>
-                    {/* Stripe Elements will be mounted here */}
-                    <div
-                      id="card-element"
-                      className="p-4 border rounded-md bg-gray-50"
-                    />
-                  </div>
-                  <button
-                    onClick={() => navigate("/order-confirmation")}
-                    className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700"
-                  >
-                    Place Order
-                  </button>
+                  <Payment shippingInfo={shippingInfo} />
                 </div>
               )}
             </div>
