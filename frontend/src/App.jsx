@@ -21,7 +21,11 @@ import { useEffect } from "react";
 import { getCartProducts } from "./redux/slices/Cart/GetCart";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-import ChatBot from "./pages/ChatBot"
+import ChatBot from "./pages/ChatBot";
+import FertilityPrediction from "./components/FertilityPrediction";
+import CropPrediction from "./components/CropPrediction";
+import FertilizerPrediction from "./components/FertilizerPrediction";
+import Payment from "./components/Payment";
 
 function App() {
   const dispatch = useDispatch();
@@ -33,7 +37,7 @@ function App() {
     <Router>
       <ToastContainer
         position="top-right" // Change position if needed
-        autoClose={3000} // Close after 3 seconds
+        autoClose={1000} // Close after 3 seconds
         hideProgressBar={false}
         newestOnTop={true}
         closeOnClick
@@ -59,6 +63,9 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="*" element={<Error />} />
             <Route path="/chat" element={<ChatBot />} />
+            <Route path="/fertility" element={<FertilityPrediction />} />
+            <Route path="/crop" element={<CropPrediction />} />
+            <Route path="/fertilizer" element={<FertilizerPrediction />} />
           </Routes>
         </div>
         <Footer />

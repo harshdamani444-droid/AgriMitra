@@ -17,10 +17,12 @@ import { useAuth } from "../hooks/useAuth"; // Assuming you have this custom hoo
 import UserDropdown from "./UserDropdown";
 import { useSelector } from "react-redux";
 import { use } from "react";
+import MLDropDown from "./MLDropDown";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false); // State to manage dropdown visibility
   const [isProfileOpen, setIsProfileOpen] = useState(false); // State to manage dropdown visibility
+  const [isMLDropDownOpen, setIsMLDropDownOpen] = useState(false); // State to manage dropdown visibility
 
   const { user } = useAuth(); // Getting the user from auth context
   const navigate = useNavigate();
@@ -30,6 +32,10 @@ const Navbar = () => {
   };
   const isProfileOpenToggle = () => {
     setIsProfileOpen(!isProfileOpen); // Toggle profile menu visibility
+  };
+
+  const isMLDropDownToggle = () => {
+    setIsMLDropDownOpen(!isMLDropDownOpen); // Toggle ML dropdown visibility
   };
   var cartItemsCount = products.length;
   useEffect(() => {
@@ -78,9 +84,18 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Link to="/chat" className="hover:text-green-200">
-              <BotMessageSquare className="h-6 w-6" />
-            </Link>
+            <div className="hover:text-green-200 relative">
+              <button
+                onClick={isMLDropDownToggle}
+                className="flex items-center space-x-2"
+              >
+                <BotMessageSquare className="h-6 w-6" />
+              </button>
+              <MLDropDown
+                isOpen={isMLDropDownOpen}
+                onClose={() => setIsMLDropDownOpen(false)} // Close the menu when clicking outside
+              />
+            </div>
             <Link to="/cart" className="relative">
               <button className="hover:text-green-200 p-1 rounded-full  focus:outline-none focus:ring-2 focus:ring-green-600">
                 <ShoppingCart className="h-6 w-6" />
