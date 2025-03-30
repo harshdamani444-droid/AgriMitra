@@ -12,6 +12,7 @@ import {
   LogLevel,
   OrdersController,
 } from "@paypal/paypal-server-sdk";
+import axios from "axios";
 
 const createOrder = asyncHandler(async (req, res) => {
   // get user from req
@@ -169,7 +170,8 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   const ordersController = new OrdersController(client);
-  let totalPriceInUSD = totalPrice / 82; // convert INR to USD
+  const apires = await axios.get(`http://anyapi.io/api/v1/exchange/convert?base=INR&to=USD&amount=${totalPrice}&apiKey=fb6tiqd9fjds6n92c50gefgam95aq8gn7rqh8mu73gqlc8sfkvq4o`);
+  let totalPriceInUSD = apires.data.converted; // convert INR to USD
   let formattedNum = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPriceInUSD);
   const createOrder = async () => {
     const collect = {
