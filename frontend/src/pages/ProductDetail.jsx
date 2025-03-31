@@ -7,18 +7,27 @@ import {
   Plus,
   ShoppingBag,
   ShoppingCart,
+  Star,
 } from "lucide-react";
 import { getProductDetails } from "../redux/slices/Product/ProductDetailSlice";
 import Carousel from "react-material-ui-carousel";
 import { addToCart, getCartProducts } from "../redux/slices/Cart/GetCart";
 import { toast } from "react-toastify";
+import AddRatingModal from "../components/AddRatingModal";
+import axios from "axios";
+import ProductReviews from "../components/ProductReviews";
 
 const ProductDetail = () => {
   const location = useLocation();
+  const [openRatingModal, setOpenRatingModal] = useState(false);
+  const [reviewUpdate, setReviewUpdate] = useState(false);
+  const [review, setReview] = useState([]);
+  const [rating, setRating] = useState(0);
   const id = location.state?.id;
   const dispatch = useDispatch();
   const { product, loading } = useSelector((state) => state.productDetails);
   const [quantity, setQuantity] = useState(1);
+
   const increaseQuantity = () => {
     if (product.quantity <= quantity) return;
     const qty = quantity + 1;
@@ -30,9 +39,26 @@ const ProductDetail = () => {
     const qty = quantity - 1;
     setQuantity(qty);
   };
+  async function getRatings(id) {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/ratings/get-ratings/${id}`
+      );
+      if (response.data.statusCode === 200) {
+        setReview(response.data.data.ratings);
+        setRating(response.data.data.averageRating);
+      } else {
+        console.error("Failed to fetch ratings:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching ratings:", error);
+      return null;
+    }
+  }
   useEffect(() => {
     dispatch(getProductDetails(id));
-  }, [dispatch, id]);
+    getRatings(product._id);
+  }, [dispatch, id, reviewUpdate]);
 
   const handleAddToCart = async () => {
     const resultAction = await dispatch(
@@ -111,9 +137,7 @@ const ProductDetail = () => {
           <p className="text-lg text-gray-600 mb-2">
             Size: {product?.size} {product?.unitOfSize}
           </p>
-          <p className="text-lg text-gray-600 mb-2">
-            Rating: {product?.rating} ⭐
-          </p>
+          <p className="text-lg text-gray-600 mb-2">Rating: {rating} ⭐</p>
           <p className="text-lg text-gray-600 mb-2">
             Farm Name: {product?.farmName}
           </p>
@@ -129,6 +153,25 @@ const ProductDetail = () => {
               {product?.address?.city}, {product?.address?.state} -{" "}
               {product?.address?.pinCode}
             </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 mt-6">
+            <button
+              onClick={() => setOpenRatingModal(true)}
+              className="bg-yellow-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all duration-300 hover:bg-yellow-700 shadow-md"
+            >
+              <Star className="h-5 w-5" />
+              <span className="font-medium">Add Rating</span>
+            </button>
+
+            <AddRatingModal
+              open={openRatingModal}
+              handleClose={() => setOpenRatingModal(false)}
+              productId={product?._id}
+              setReviewUpdate={setReviewUpdate}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-">
+            <ProductReviews review={review} />
           </div>
         </div>
       </div>

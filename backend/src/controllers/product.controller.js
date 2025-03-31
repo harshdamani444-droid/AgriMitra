@@ -31,9 +31,16 @@ const createProduct = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "Please fill in all fields");
   }
-
+  console.log(req.body);
   // check address
-  address = JSON.parse(address);
+  if (typeof address === "string") {
+    try {
+      address = JSON.parse(address); // Parse only if it's a string
+    } catch (error) {
+      throw new ApiError(400, "Invalid address format");
+    }
+  }
+
   if (
     !address.houseNo ||
     !address.street ||

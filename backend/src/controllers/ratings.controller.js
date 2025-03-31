@@ -11,8 +11,7 @@ const createRating = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Rating, review, and productId are required");
     }
 
-    if(!Number.isInteger(rating))
-    {
+    if (!Number.isInteger(rating)) {
         throw new ApiError(400, "Rating must be an integer");
     }
 
