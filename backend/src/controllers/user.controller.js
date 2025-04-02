@@ -654,7 +654,8 @@ export {
   completeProfile,
   forgotPassword,
   resetPassword,
-  refreshAccessToken
+  refreshAccessToken,
   getFarmerDashboardDetails,
+
 
 };
