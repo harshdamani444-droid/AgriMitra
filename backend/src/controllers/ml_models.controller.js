@@ -68,11 +68,11 @@ const predictFertilizer = async (req, res) => {
         }
     }
 
-    if(!["Black", "Clayey", "Loamy", "Red", "Sandy"].includes(req.body.soil_type)) {
+    if (!["Black", "Clayey", "Loamy", "Red", "Sandy"].includes(req.body.soil_type)) {
         return res.status(400).json({ error: `Invalid soil type. Must be one of: "clay", "silt", "loam"` });
     }
 
-    if(!["Maize", "Sugarcane", "Cotton", "Tobacco", "Paddy", "Barley", "Wheat", "Millets", "Ground Nuts", "Oil seeds", "Pulses"].includes(req.body.crop_type)) {
+    if (!["Maize", "Sugarcane", "Cotton", "Tobacco", "Paddy", "Barley", "Wheat", "Millets", "Ground Nuts", "Oil seeds", "Pulses"].includes(req.body.crop_type)) {
         return res.status(400).json({ error: `Invalid crop type. Must be one of: "rice", "wheat", "maize", "cotton", "sugarcane"` });
     }
 

@@ -11,8 +11,7 @@ const createRating = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Rating, review, and productId are required");
     }
 
-    if(!Number.isInteger(rating))
-    {
+    if (!Number.isInteger(rating)) {
         throw new ApiError(400, "Rating must be an integer");
     }
 
@@ -91,53 +90,4 @@ const getRatings = asyncHandler(async (req, res) => {
 });
 
 export { createRating, getRatings };
-
-
-// const getRatings = asyncHandler(async (req, res) => {
-//     const { productId } = req.params;
-
-//     if (!productId) {
-//         throw new ApiError(400, "Product ID is required");
-//     }
-
-//     const ratings = await Rating.find({ productId });
-
-//     return res.status(200).json(
-//         new ApiResponse({
-//             statusCode: 200,
-//             data: ratings,
-//             message: "Ratings retrieved successfully",
-//         })
-//     );
-// });
-
-
-
-
-
-// const getRatings = asyncHandler(async (req, res) => {
-//     const { productId } = req.params;
-
-//     if (!productId) {
-//         throw new ApiError(400, "Product ID is required");
-//     }
-
-//     const ratings = await Rating.find({ productId });
-
-//     let totalRating = 0;
-//     let totalRatings = ratings.length;
-
-//     ratings.forEach((rating) => {
-//         totalRating += rating.rating;
-//     });
-
-//     const averageRating = totalRatings > 0 ? (totalRating / totalRatings).toFixed(1) : "0.0";
-
-//     return res.status(200).json(
-//         new ApiResponse({
-//             statusCode: 200,
-//             data: { ratings, averageRating: parseFloat(averageRating), totalRatings },
-//             message: "Ratings retrieved successfully",
-//         })
-//     );
-// });
+;

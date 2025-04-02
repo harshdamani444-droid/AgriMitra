@@ -10,7 +10,7 @@ export const useAuth = () => {
 
     const login = (userData) => {
         dispatch(setUser(userData));
-    };
+    };   
 
     const handleLogout = async () => {
         await dispatch(logoutUser());

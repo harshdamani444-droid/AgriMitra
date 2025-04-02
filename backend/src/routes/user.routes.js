@@ -8,7 +8,9 @@ import {
   googleOAuth,
   completeProfile,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  refreshAccessToken
+  getFarmerDashboardDetails,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -28,11 +30,12 @@ router.route("/register").post(
 router.route("/login").post(loginUser);
 
 router.route("/googleVerify").post(googleOAuth);
-
+router.route("/refresh-token").get(refreshAccessToken);
 // secure routes
 router.route("/logout").post(verifyJWT, logoutUser);
 
 router.route("/current-user").get(verifyJWT, getCurrentUser);
+
 
 router.route("/update-avatar").patch(
   verifyJWT,
@@ -50,5 +53,7 @@ router.route("/complete-profile").patch(verifyJWT, completeProfile);
 router.route("/forgot-password").post(forgotPassword);
 
 router.route("/reset-password/:resetToken").post(resetPassword);
+
+router.route("/farmer-dashboard").get(verifyJWT, getFarmerDashboardDetails);
 
 export default router;

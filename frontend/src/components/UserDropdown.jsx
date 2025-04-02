@@ -1,11 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { toast } from "react-toastify";
+import { use } from "react";
 
 const UserDropdown = ({ isOpen, onClose }) => {
   const { logout, user } = useAuth();
+  const [isFarmer, setIsFarmer] = React.useState(false);
+  useEffect(() => {
+    if (user?.role === "farmer") {
+      setIsFarmer(true);
+    } else {
+      setIsFarmer(false);
+    }
+  }, [user]);
 
   if (!isOpen) return null;
 
@@ -38,6 +47,16 @@ const UserDropdown = ({ isOpen, onClose }) => {
           <Settings className="w-5 h-5" />
           <span>My Profile</span>
         </Link>
+        {isFarmer && (
+          <Link
+            to="/farmer/dashboard"
+            onClick={onClose}
+            className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span>Dashboard</span>
+          </Link>
+        )}
 
         <button
           onClick={() => {

@@ -9,8 +9,8 @@ import rateLimit from "express-rate-limit";
 
 // Api Rate limiter
 export const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000,            // 1 minutes
-  max: 2,                             // Limit each IP to 100 requests per windowMs
+  windowMs: 1 * 60 * 15,            // 15 seconds
+  max: 1,                             // Limit each IP to 100 requests per windowMs
   message: "Too many requests from this IP, please try again later.",
   headers: true,                      // Send rate limit headers
 });
@@ -77,6 +77,9 @@ import Wishlist from "./routes/wishlist.routes.js";
 
 import ratings from "./routes/ratings.routes.js";
 
+import orderRoutes from "./routes/order.routes.js"
+
+
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
@@ -84,6 +87,7 @@ app.use("/api/v1/chatBot", chatRoutes);
 app.use("/api/v1/predict", limiter, mlPredictRoutes);
 app.use("/api/v1/wishlist", Wishlist);
 app.use("/api/v1/ratings", ratings);
+app.use("/api/v1/order", orderRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

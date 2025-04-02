@@ -25,6 +25,9 @@ import ChatBot from "./pages/ChatBot";
 import FertilityPrediction from "./components/FertilityPrediction";
 import CropPrediction from "./components/CropPrediction";
 import FertilizerPrediction from "./components/FertilizerPrediction";
+import Payment from "./components/Payment";
+import FarmerDashboard from "./pages/FarmerDashboard";
+import NewProduct from "./pages/NewProduct";
 
 function App() {
   const dispatch = useDispatch();
@@ -36,7 +39,7 @@ function App() {
     <Router>
       <ToastContainer
         position="top-right" // Change position if needed
-        autoClose={3000} // Close after 3 seconds
+        autoClose={1000} // Close after 3 seconds
         hideProgressBar={false}
         newestOnTop={true}
         closeOnClick
@@ -65,6 +68,8 @@ function App() {
             <Route path="/fertility" element={<FertilityPrediction />} />
             <Route path="/crop" element={<CropPrediction />} />
             <Route path="/fertilizer" element={<FertilizerPrediction />} />
+            <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+            <Route path="/farmer/products/new" element={<NewProduct />} />
           </Routes>
         </div>
         <Footer />

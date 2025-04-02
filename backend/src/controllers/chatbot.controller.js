@@ -22,7 +22,7 @@ const chat = asyncHandler(async (req, res) => {
 
     // Format chat history for Gemini API
     const formattedHistory = history.map((msg) => ({
-        role: msg.role === "assistant" ? "model" : msg.role, 
+        role: msg.role === "assistant" ? "model" : msg.role,
         parts: [{ text: msg.content + 'give response with emojis' }],
     }));
 
