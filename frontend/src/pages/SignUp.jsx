@@ -21,12 +21,12 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+    // console.log(formData);
     const formDataToSend = new FormData();
     for (let key in formData) {
       formDataToSend.append(key, formData[key]);
     }
-    console.log(formDataToSend);
+    // console.log(formDataToSend);
     const resultAction = await dispatch(signupUser(formDataToSend));
     if (signupUser.fulfilled.match(resultAction)) {
       console.log("User sign up successful");

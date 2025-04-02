@@ -66,7 +66,7 @@ const addToWishlist = asyncHandler(async (req, res) => {
     if (!productId) {
         throw new ApiError(400, "Product ID is required");
     }
-    
+
     const product = await Product.findById(productId);
 
     if (!product) {
@@ -89,9 +89,9 @@ const addToWishlist = asyncHandler(async (req, res) => {
 
     return res.status(200).json(
         new ApiResponse({
-        statusCode: 200,
-        data: wishlist,
-        message: "Product added to wishlist",
+            statusCode: 200,
+            data: wishlist,
+            message: "Product added to wishlist",
         })
     );
 }
@@ -116,9 +116,9 @@ const removeFromWishlist = asyncHandler(async (req, res) => {
 
     return res.status(200).json(
         new ApiResponse({
-        statusCode: 200,
-        data: wishlist,
-        message: "Product removed from wishlist",
+            statusCode: 200,
+            data: wishlist,
+            message: "Product removed from wishlist",
         })
     );
 }

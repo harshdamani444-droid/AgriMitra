@@ -5,6 +5,7 @@ import { sendMail } from "../utils/sendMail.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Product } from "../models/product.model.js";
 import { CROP_CATEGORY, UNIT_OF_SIZE } from "../constants.js";
+import redisClient from "../utils/redisClient.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   // get farmName, description, price, category, quantity, size, unitOfSize, address
@@ -31,9 +32,16 @@ const createProduct = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "Please fill in all fields");
   }
-
+  console.log(req.body);
   // check address
-  address = JSON.parse(address);
+  if (typeof address === "string") {
+    try {
+      address = JSON.parse(address); // Parse only if it's a string
+    } catch (error) {
+      throw new ApiError(400, "Invalid address format");
+    }
+  }
+
   if (
     !address.houseNo ||
     !address.street ||
@@ -97,7 +105,22 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProduct = asyncHandler(async (req, res) => {
+  const cacheKey = "all_products";
+  const cachedProducts = await redisClient.get(cacheKey);
+  if (cachedProducts) {
+    return res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        message: "All products from Cache",
+        data: JSON.parse(cachedProducts),
+      })
+    );
+  }
   const products = await Product.find({});
+
+  // Set the products in cache with an expiration time of 1 hour (3600 seconds)
+  await redisClient.setex(cacheKey, 3600, JSON.stringify(products));
+
 
   return res.status(200).json(
     new ApiResponse({
@@ -150,8 +173,25 @@ const getProductBetweenPriceRange = asyncHandler(async (req, res) => {
 
 const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
+  const cacheKey = `product_${id}`;
+  const cachedProduct = await redisClient.get(cacheKey);
+  if (cachedProduct) {
+    return res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        message: "Product",
+        data: JSON.parse(cachedProduct),
+      })
+    );
+  }
   const product = await Product.findById(id);
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
+
+  // Set the product in cache with an expiration time of 1 hour (3600 seconds)
+  await redisClient.setex(cacheKey, 3600, JSON.stringify(product));
+  // Send the product as a response
 
   return res.status(200).json(
     new ApiResponse({
@@ -178,7 +218,8 @@ const getProductByFarmer = asyncHandler(async (req, res) => {
 
 const deleteProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
+  const cacheKey = `product_${id}`;
+  await redisClient.del(cacheKey);
   const product = await Product.deleteOne({
     _id: id,
     farmer: req.user._id,
@@ -199,6 +240,8 @@ const deleteProductById = asyncHandler(async (req, res) => {
 
 const updateProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const cacheKey = `product_${id}`;
+  await redisClient.del(cacheKey);
 
   if (!id) {
     throw new ApiError(400, "Please provide product id");
