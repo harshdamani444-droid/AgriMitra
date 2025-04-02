@@ -32,7 +32,7 @@ const createProduct = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "Please fill in all fields");
   }
-  console.log(req.body);
+  // console.log(req.body);
   // check address
   if (typeof address === "string") {
     try {
@@ -94,6 +94,7 @@ const createProduct = asyncHandler(async (req, res) => {
     images: imageURL.map((res) => res.url),
   });
 
+  redisClient.del("all_products"); // delete all products from cache
   // return product
   return res.status(201).json(
     new ApiResponse({
@@ -118,7 +119,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
   }
   const products = await Product.find({});
 
-  // Set the products in cache with an expiration time of 1 hour (3600 seconds)
+  // Set the products in cache with an expiration time of 1 hour(3600 seconds)
   await redisClient.setex(cacheKey, 3600, JSON.stringify(products));
 
 

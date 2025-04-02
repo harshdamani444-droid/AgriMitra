@@ -203,12 +203,6 @@ const FarmerDashboard = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          to={`/farmer/products/${product.id}`}
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          Edit
-                        </Link>
                         <button
                           onClick={() => {
                             handleDeleteProduct(product._id);
