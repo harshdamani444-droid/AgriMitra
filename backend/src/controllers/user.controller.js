@@ -157,16 +157,16 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  // get refresh token from cookies
+
   const refresh = req.cookies.refreshToken;
   if (!refresh) {
     throw new ApiError(401, "Refresh token is required");
   }
   const decoded = jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET);
-  // generate access and refresh tokens
+
   console.log(decoded);
   const user = await User.findOne({ _id: decoded._id });
-  // check if user exists
+
   if (!user) {
     throw new ApiError(404, "User not found");
   }
@@ -174,7 +174,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     user
   );
 
-  // set cookies
+
   const options = {
     httpOnly: true,
     secure: false,
@@ -182,7 +182,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   };
 
-  // send response
+
   const userResponse = {
     ...user.toJSON(),
     password: undefined,

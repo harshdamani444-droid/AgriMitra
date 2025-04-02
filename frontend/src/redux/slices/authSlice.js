@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import Cookies from "js-cookie";
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api/v1';
 
 
 export const loginUser = createAsyncThunk(
@@ -74,9 +73,9 @@ export const completeProfile = createAsyncThunk(
 const refreshAccessToken = async () => {
     try {
         const res = await axios.get(`${API_URL}/user/refresh-token`, {
-            withCredentials: true, // Send cookies
+            withCredentials: true,
         });
-        return res.data.accessToken; // Return the new access token
+        return res.data;
     } catch (error) {
         console.error("Token refresh failed:", error);
         throw error;
@@ -95,14 +94,14 @@ export const getUser = createAsyncThunk(
             if (error.response && error.response.status === 401) {
 
                 try {
-                    await refreshAccessToken();
-
+                    const resp = await refreshAccessToken();
+                    console.log("Token refreshed successfully:", resp);
                     const retryResponse = await axios.get(`${API_URL}/user/current-user`, {
                         withCredentials: true,
                     });
                     return retryResponse.data;
                 } catch (refreshError) {
-                    console.error("Refresh failed, logging out...");
+                    // console.error("Refresh failed, logging out...");
                     thunkAPI.dispatch(logout()); // Log the user out if refresh fails
                     return thunkAPI.rejectWithValue("Session expired. Please log in again.");
                 }
@@ -172,13 +171,6 @@ const authSlice = createSlice({
         error: null,
     },
     reducers: {
-        // logout: (state) => {
-
-        //     state.user = null;
-        //     console.log("Logging out");
-        //     Cookies.remove("accessToken");
-        //     Cookies.remove("refreshToken");
-        // },
         setUser: (state, action) => {
             state.user = action.payload;
             state.loading = false;
