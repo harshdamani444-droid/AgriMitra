@@ -2,6 +2,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
+import { Product } from "../models/product.model.js";
+import { Order } from "../models/order.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { roles } from "../constants.js";
 import { OAuth2Client } from "google-auth-library";
@@ -148,12 +150,13 @@ const loginUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse({
-      statusCode: 200,
-      data: userResponse,
-      message: "User logged in successfully",
-    }));
-
+    .json(
+      new ApiResponse({
+        statusCode: 200,
+        data: userResponse,
+        message: "User logged in successfully",
+      })
+    );
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -216,7 +219,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: false,
     sameSite: "strict",
-    maxAge: 1000 * 60 * 60 * 24 * 7
+    maxAge: 1000 * 60 * 60 * 24 * 7,
   };
 
   // send response
@@ -300,7 +303,6 @@ const googleOAuth = asyncHandler(async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-
 
     if (payload?.email_verified) {
       const user = await User.findOne({ email: payload?.email });
@@ -440,7 +442,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   await user.save();
 
-
   // send email with reset token
   const resetUrl = `${process.env.FRONTEND_URL}:${process.env.FRONTEND_PORT}/reset-password/${resetToken}`;
   const htmlContent = `
@@ -510,10 +511,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   }
 
   // update password
-  console.log(req.body)
+  console.log(req.body);
   const { password, confirmPassword } = req?.body;
   console.log(password);
-  console.log(confirmPassword)
+  console.log(confirmPassword);
   if (!password && !confirmPassword) {
     throw new ApiError(400, "Password and passwordConfirm are required");
   }
@@ -537,6 +538,112 @@ const resetPassword = asyncHandler(async (req, res) => {
   );
 });
 
+const getFarmerDashboardDetails = asyncHandler(async (req, res) => {
+  // get user from request
+  const user = req.user;
+
+  if (!user || user.role !== "farmer") {
+    throw new ApiError(403, "Access denied");
+  }
+
+  const productsCount = await Product.countDocuments({ farmer: user._id });
+
+  let orders = await Order.aggregate([
+    {
+      $match: {
+        "shippingInfo.farmDetails.farmer._id": user._id,
+      },
+    },
+    {
+      $match: {
+        orderStatus: {
+          $ne: "Cancelled",
+          $ne: "Pending",
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "products",
+        pipeline: [
+          {
+            $match: {
+              farmer: user._id,
+            },
+          },
+          {
+            $project: {
+              category: 1,
+              price: 1,
+              unitOfSize: 1,
+              size: 1,
+              quantity: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        orderStatus: 1,
+        consumer: 1,
+        shippingInfo: 1,
+        orderItems: 1,
+        products: 1,
+      },
+    },
+  ]);
+
+  // map products and orderItems to get product details
+  orders?.map((order) => {
+    order?.orderItems?.forEach((item) => {
+      order?.products?.forEach((product) => {
+        if (item?.product?.toString() === product?._id?.toString()) {
+          item.productDetails = product;
+        }
+      });
+    });
+    order.products = undefined;
+    return order;
+  });
+
+  const ordersCount = orders?.length || 0;
+
+  let pendingDeliveryCount = 0;
+  orders?.map((order) => {
+    order.shippingInfo.map((info) => {
+      if (info.status === "confirmed") {
+        pendingDeliveryCount++;
+      }
+    });
+  });
+
+  let totalEarnings = 0;
+  orders?.map((order) => {
+    order.orderItems.map((item) => {
+      totalEarnings += item.productDetails.price * item.quantity;
+    });
+  });
+
+  return res.status(200).json(
+    new ApiResponse({
+      statusCode: 200,
+      data: {
+        productsCount,
+        ordersCount,
+        pendingDeliveryCount,
+        totalEarnings,
+      },
+      message: "Farmer dashboard details fetched successfully",
+    })
+  );
+});
+
 export {
   registerUser,
   loginUser,
@@ -548,4 +655,6 @@ export {
   forgotPassword,
   resetPassword,
   refreshAccessToken
+  getFarmerDashboardDetails,
+
 };
