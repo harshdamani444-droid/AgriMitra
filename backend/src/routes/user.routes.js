@@ -10,6 +10,7 @@ import {
   forgotPassword,
   resetPassword,
   refreshAccessToken
+  getFarmerDashboardDetails,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -52,5 +53,7 @@ router.route("/complete-profile").patch(verifyJWT, completeProfile);
 router.route("/forgot-password").post(forgotPassword);
 
 router.route("/reset-password/:resetToken").post(resetPassword);
+
+router.route("/farmer-dashboard").get(verifyJWT, getFarmerDashboardDetails);
 
 export default router;

@@ -13,6 +13,7 @@ import {
   OrdersController,
 } from "@paypal/paypal-server-sdk";
 import axios from "axios";
+import mongoose, { mongo } from "mongoose";
 
 const createOrder = asyncHandler(async (req, res) => {
   // get user from req
@@ -170,9 +171,14 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   const ordersController = new OrdersController(client);
-  const apires = await axios.get(`http://anyapi.io/api/v1/exchange/convert?base=INR&to=USD&amount=${totalPrice}&apiKey=fb6tiqd9fjds6n92c50gefgam95aq8gn7rqh8mu73gqlc8sfkvq4o`);
+  const apires = await axios.get(
+    `http://anyapi.io/api/v1/exchange/convert?base=INR&to=USD&amount=${totalPrice}&apiKey=fb6tiqd9fjds6n92c50gefgam95aq8gn7rqh8mu73gqlc8sfkvq4o`
+  );
   let totalPriceInUSD = apires.data.converted; // convert INR to USD
-  let formattedNum = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPriceInUSD);
+  let formattedNum = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(totalPriceInUSD);
   const createOrder = async () => {
     const collect = {
       body: {
@@ -211,6 +217,8 @@ const createOrder = asyncHandler(async (req, res) => {
     // use the cart information passed from the front-end to calculate the order amount detals
     const { jsonResponse, httpStatusCode } = await createOrder();
     jsonResponse.orderId = order._id; // add order id to response
+    jsonResponse.deliveryFee = deliveryPrice; // add delivery fee to response
+    jsonResponse.totalPrice = totalPrice; // add total price to response
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);
@@ -315,4 +323,446 @@ const complteOrder = asyncHandler(async (req, res) => {
   }
 });
 
-export { createOrder, complteOrder };
+const getOrderByFarmerId = asyncHandler(async (req, res) => {
+  // get user from req
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized", null);
+  }
+
+  // get order from database
+  let orders = await Order.aggregate([
+    {
+      $match: {
+        "shippingInfo.farmDetails.farmer._id": user._id,
+      },
+    },
+    {
+      $match: {
+        orderStatus: {
+          $ne: "Cancelled",
+          $ne: "Pending",
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "consumer",
+        foreignField: "_id",
+        as: "consumer",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              phone: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: "$consumer",
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "products",
+        pipeline: [
+          {
+            $match: {
+              farmer: user._id,
+            },
+          },
+          {
+            $project: {
+              category: 1,
+              price: 1,
+              unitOfSize: 1,
+              size: 1,
+              quantity: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        orderStatus: 1,
+        consumer: 1,
+        orderItems: 1,
+        products: 1,
+      },
+    },
+  ]);
+
+  // map products and orderItems to get product details
+  orders?.map((order) => {
+    order?.orderItems?.forEach((item) => {
+      order?.products?.forEach((product) => {
+        if (item?.product?.toString() === product?._id?.toString()) {
+          item.productDetails = product;
+        }
+      });
+    });
+    order.products = undefined;
+    return order;
+  });
+
+  orders?.map((order) => {
+    order.totalAmount = order?.orderItems?.reduce((acc, item) => {
+      return acc + item.productDetails?.price * item?.quantity;
+    }, 0);
+
+    order.orderItems = undefined;
+  });
+
+  return res.status(200).json(
+    new ApiResponse({
+      statusCode: 200,
+      message: "All orders by farmer",
+      data: orders,
+    })
+  );
+});
+
+const getOrderByConsumerId = asyncHandler(async (req, res) => {
+  // get user from req
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized", null);
+  }
+
+  // get order from database
+  const orders = await Order.aggregate([
+    {
+      $match: {
+        consumer: user._id,
+      },
+    },
+    {
+      $match: {
+        orderStatus: {
+          $ne: "Cancelled",
+          $ne: "Pending",
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "consumer",
+        foreignField: "_id",
+        as: "consumer",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              phone: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: "$consumer",
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "products",
+        pipeline: [
+          {
+            $project: {
+              category: 1,
+              price: 1,
+              unitOfSize: 1,
+              size: 1,
+              quantity: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        orderStatus: 1,
+        orderItems: 1,
+        products: 1,
+      },
+    },
+  ]);
+
+  // map products and orderItems to get product details
+  orders?.map((order) => {
+    order?.orderItems?.forEach((item) => {
+      order?.products?.forEach((product) => {
+        if (item?.product?.toString() === product?._id?.toString()) {
+          item.productDetails = product;
+        }
+      });
+    });
+    order.products = undefined;
+    return order;
+  });
+
+  orders?.map((order) => {
+    order.totalAmount = order?.orderItems?.reduce((acc, item) => {
+      return acc + item.productDetails?.price * item?.quantity;
+    }, 0);
+
+    order.orderItems = undefined;
+  });
+
+  return res.status(200).json(
+    new ApiResponse({
+      statusCode: 200,
+      message: "All orders by consumer",
+      data: orders,
+    })
+  );
+});
+
+const getOrderById = asyncHandler(async (req, res) => {
+  // get user from req
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized", null);
+  }
+
+  // get order id from params
+  const { id } = req.params;
+
+  // get order from database
+  let order = await Order.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(id),
+        consumer: user._id,
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "products",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "farmer",
+              foreignField: "_id",
+              as: "farmer",
+              pipeline: [
+                {
+                  $project: {
+                    name: 1,
+                    email: 1,
+                    avatar: 1,
+                    phone: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: "$farmer",
+          },
+          {
+            $project: {
+              category: 1,
+              farmName: 1,
+              farmer: 1,
+              price: 1,
+              unitOfSize: 1,
+              size: 1,
+              images: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        orderStatus: 1,
+        orderItems: 1,
+        deliveryInfo: 1,
+        products: 1,
+        shippingPrice: 1,
+      },
+    },
+  ]);
+
+  order = order[0];
+
+  if (!order) {
+    throw new ApiError(400, "Order not found", null);
+  }
+
+  // map products and orderItems to get product details
+  order?.orderItems?.forEach((item) => {
+    order?.products?.forEach((product) => {
+      if (item?.product?.toString() === product?._id?.toString()) {
+        item.productDetails = product;
+      }
+    });
+  });
+  order.products = undefined;
+
+  order.totalAmount = order?.orderItems?.reduce((acc, item) => {
+    return acc + item.productDetails?.price * item?.quantity;
+  }, 0);
+
+  return res.status(200).json(
+    new ApiResponse({
+      statusCode: 200,
+      message: "Order details",
+      data: order,
+    })
+  );
+});
+
+const getOrderByIdForFarmer = asyncHandler(async (req, res) => {
+  // get user from req
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized", null);
+  }
+
+  // get order id from params
+  const { id } = req.params;
+
+  // get order from database
+  let order = await Order.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(id),
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "products",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "farmer",
+              foreignField: "_id",
+              as: "farmer",
+              pipeline: [
+                {
+                  $project: {
+                    name: 1,
+                    email: 1,
+                    avatar: 1,
+                    phone: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: "$farmer",
+          },
+          {
+            $project: {
+              category: 1,
+              farmName: 1,
+              farmer: 1,
+              price: 1,
+              unitOfSize: 1,
+              size: 1,
+              images: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        orderStatus: 1,
+        orderItems: 1,
+        deliveryInfo: 1,
+        products: 1,
+        shippingPrice: 1,
+      },
+    },
+  ]);
+
+  order = order[0];
+
+  if (!order) {
+    throw new ApiError(400, "Order not found", null);
+  }
+
+  // map products and orderItems to get product details
+  order?.orderItems?.forEach((item) => {
+    order?.products?.forEach((product) => {
+      if (item?.product?.toString() === product?._id?.toString()) {
+        item.productDetails = product;
+      }
+    });
+  });
+  order.products = undefined;
+
+  // remove products from order which do not belong to farmer
+  order.orderItems = order?.orderItems?.filter((item) => {
+    return item.productDetails.farmer._id.toString() === user._id.toString();
+  });
+  if (order?.orderItems?.length === 0) {
+    throw new ApiError(400, "Order not found", null);
+  }
+
+  order.totalAmount = order?.orderItems?.reduce((acc, item) => {
+    return acc + item.productDetails?.price * item?.quantity;
+  }, 0);
+
+  return res.status(200).json(
+    new ApiResponse({
+      statusCode: 200,
+      message: "Order details",
+      data: order,
+    })
+  );
+});
+
+export {
+  createOrder,
+  complteOrder,
+  getOrderByConsumerId,
+  getOrderByFarmerId,
+  getOrderById,
+  getOrderByIdForFarmer,
+};
