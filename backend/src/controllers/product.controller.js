@@ -111,33 +111,34 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProduct = asyncHandler(async (req, res) => {
-  const strringify = JSON.stringify(req.query);
-  const cacheKey = `all_products_${strringify}`;
-  const cachedProducts = await redisClient.get(cacheKey);
-  if (cachedProducts) {
-    console.log("Cache hit");
-    return res.status(200).json(
-      new ApiResponse({
-        statusCode: 200,
-        message: "All products from Cache",
-        data: JSON.parse(cachedProducts),
-      })
-    );
-  }
+  // const strringify = JSON.stringify(req.query);
+  // const cacheKey = `all_products_${strringify}`;
+  // const cachedProducts = await redisClient.get(cacheKey);
+  // if (cachedProducts) {
+  //   console.log("Cache hit");
+  //   return res.status(200).json(
+  //     new ApiResponse({
+  //       statusCode: 200,
+  //       message: "All products from Cache",
+  //       data: JSON.parse(cachedProducts),
+  //     })
+  //   );
+  // }
 
-  const resultsPerPage = req.query.pageSize || 10;
+  const resultsPerPage = req.query.pageSize || 8;
   // const products = await Product.find({});
   const totalProducts = await Product.countDocuments();
-  const apiFeatures = new ApiFeatures(Product.find(), req.query)
+  let filteredProducts = new ApiFeatures(Product.find(), req.query)
     .search()
     .filter()
     .sort()
     .paginate(resultsPerPage);
-  const products = await apiFeatures.query;
+
+  const products = await filteredProducts.query;
 
 
   // Set the products in cache with an expiration time of 1 hour(3600 seconds)
-  await redisClient.setex(cacheKey, 3600, JSON.stringify(products));
+  // await redisClient.setex(cacheKey, 3600, JSON.stringify(products));
 
 
   return res.status(200).json(
