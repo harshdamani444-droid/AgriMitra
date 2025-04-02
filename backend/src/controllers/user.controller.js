@@ -9,6 +9,8 @@ import { roles } from "../constants.js";
 import { OAuth2Client } from "google-auth-library";
 import { sendMail } from "../utils/sendMail.js";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
+
 
 const generateAccessAndRefreshToken = async (user) => {
   try {
@@ -155,6 +157,52 @@ const loginUser = asyncHandler(async (req, res) => {
         message: "User logged in successfully",
       })
     );
+});
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+
+  const refresh = req.cookies.refreshToken;
+  if (!refresh) {
+    throw new ApiError(401, "Refresh token is required");
+  }
+  const decoded = jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET);
+
+  console.log(decoded);
+  const user = await User.findOne({ _id: decoded._id });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user
+  );
+
+
+  const options = {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  };
+
+
+  const userResponse = {
+    ...user.toJSON(),
+    password: undefined,
+    accessToken,
+    refreshToken,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse({
+      statusCode: 200,
+      data: userResponse,
+      message: "User logged in successfully",
+    }));
+
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -606,5 +654,7 @@ export {
   completeProfile,
   forgotPassword,
   resetPassword,
+  refreshAccessToken
   getFarmerDashboardDetails,
+
 };
