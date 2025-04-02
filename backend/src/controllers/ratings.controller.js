@@ -51,7 +51,12 @@ const getRatings = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Product ID is required");
     }
 
-    const ratings = await Rating.find({ productId });
+    // Populate user details and rename `userId` to `user`
+    const ratings = await Rating.find({ productId }).populate("userId", "name avatar").lean();
+
+    if (ratings.length === 0) {
+        throw new ApiError(404, "No ratings awailable for this product");
+    }
 
     let totalRating = 0;
     let totalRatings = ratings.length;
@@ -80,7 +85,10 @@ const getRatings = asyncHandler(async (req, res) => {
         new ApiResponse({
             statusCode: 200,
             data: {
-                ratings,
+                ratings: ratings.map(({ userId, ...rest }) => ({
+                    user: userId, // Rename `userId` to `user`
+                    ...rest
+                })),
                 averageRating: parseFloat(averageRating),
                 totalRatings,
                 ratingCounts, // Include rating breakdown
@@ -91,53 +99,3 @@ const getRatings = asyncHandler(async (req, res) => {
 });
 
 export { createRating, getRatings };
-
-
-// const getRatings = asyncHandler(async (req, res) => {
-//     const { productId } = req.params;
-
-//     if (!productId) {
-//         throw new ApiError(400, "Product ID is required");
-//     }
-
-//     const ratings = await Rating.find({ productId });
-
-//     return res.status(200).json(
-//         new ApiResponse({
-//             statusCode: 200,
-//             data: ratings,
-//             message: "Ratings retrieved successfully",
-//         })
-//     );
-// });
-
-
-
-
-
-// const getRatings = asyncHandler(async (req, res) => {
-//     const { productId } = req.params;
-
-//     if (!productId) {
-//         throw new ApiError(400, "Product ID is required");
-//     }
-
-//     const ratings = await Rating.find({ productId });
-
-//     let totalRating = 0;
-//     let totalRatings = ratings.length;
-
-//     ratings.forEach((rating) => {
-//         totalRating += rating.rating;
-//     });
-
-//     const averageRating = totalRatings > 0 ? (totalRating / totalRatings).toFixed(1) : "0.0";
-
-//     return res.status(200).json(
-//         new ApiResponse({
-//             statusCode: 200,
-//             data: { ratings, averageRating: parseFloat(averageRating), totalRatings },
-//             message: "Ratings retrieved successfully",
-//         })
-//     );
-// });
