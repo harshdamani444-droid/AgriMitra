@@ -4,9 +4,10 @@ import { Upload, ArrowLeft } from "lucide-react";
 import { Autocomplete, TextField } from "@mui/material";
 import { CROP_CATEGORY } from "../assets/constants"; // Assuming you have a constants file for categories
 import axios from "axios";
-
+import { toast } from "react-toastify";
 const NewProduct = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     farmName: "",
     description: "",
@@ -67,6 +68,7 @@ const NewProduct = () => {
     });
 
     try {
+      setLoading(true);
       const response = await axios.post(
         "http://localhost:4000/api/v1/product/create-product",
         formDataToSend,
@@ -80,12 +82,16 @@ const NewProduct = () => {
 
       if (response.status === 201) {
         console.log("Product created successfully", response.data);
+        toast.success("Product created successfully!");
+        navigate("/farmer/dashboard");
       }
     } catch (error) {
       console.error(
         "Error creating product:",
         error.response?.data || error.message
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -383,12 +389,22 @@ const NewProduct = () => {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                Create Product
-              </button>
+              {loading ? (
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium cursor-not-allowed"
+                  disabled
+                >
+                  Creating...
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  Create Product
+                </button>
+              )}
             </div>
           </form>
         </div>
