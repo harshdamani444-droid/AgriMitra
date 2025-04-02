@@ -8,7 +8,8 @@ import {
   googleOAuth,
   completeProfile,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  refreshAccessToken
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -28,11 +29,12 @@ router.route("/register").post(
 router.route("/login").post(loginUser);
 
 router.route("/googleVerify").post(googleOAuth);
-
+router.route("/refresh-token").get(refreshAccessToken);
 // secure routes
 router.route("/logout").post(verifyJWT, logoutUser);
 
 router.route("/current-user").get(verifyJWT, getCurrentUser);
+
 
 router.route("/update-avatar").patch(
   verifyJWT,

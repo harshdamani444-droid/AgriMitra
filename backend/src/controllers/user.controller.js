@@ -7,6 +7,8 @@ import { roles } from "../constants.js";
 import { OAuth2Client } from "google-auth-library";
 import { sendMail } from "../utils/sendMail.js";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
+
 
 const generateAccessAndRefreshToken = async (user) => {
   try {
@@ -122,6 +124,52 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   // generate access and refresh tokens
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user
+  );
+
+  // set cookies
+  const options = {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  };
+
+  // send response
+  const userResponse = {
+    ...user.toJSON(),
+    password: undefined,
+    accessToken,
+    refreshToken,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse({
+      statusCode: 200,
+      data: userResponse,
+      message: "User logged in successfully",
+    }));
+
+});
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  // get refresh token from cookies
+  const refresh = req.cookies.refreshToken;
+  if (!refresh) {
+    throw new ApiError(401, "Refresh token is required");
+  }
+  const decoded = jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET);
+  // generate access and refresh tokens
+  console.log(decoded);
+  const user = await User.findOne({ _id: decoded._id });
+  // check if user exists
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user
   );
@@ -499,4 +547,5 @@ export {
   completeProfile,
   forgotPassword,
   resetPassword,
+  refreshAccessToken
 };
