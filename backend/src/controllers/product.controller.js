@@ -6,6 +6,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Product } from "../models/product.model.js";
 import { CROP_CATEGORY, UNIT_OF_SIZE } from "../constants.js";
 import redisClient from "../utils/redisClient.js";
+import ApiFeatures from "../utils/ApiFeatures.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   // get farmName, description, price, category, quantity, size, unitOfSize, address
@@ -32,7 +33,7 @@ const createProduct = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "Please fill in all fields");
   }
-  console.log(req.body);
+  // console.log(req.body);
   // check address
   if (typeof address === "string") {
     try {
@@ -94,7 +95,12 @@ const createProduct = asyncHandler(async (req, res) => {
     images: imageURL.map((res) => res.url),
   });
 
-  // return product
+  const keys = await redisClient.keys("all_products_*");
+  if (keys.length > 0) {
+    // console.log(keys)
+    await redisClient.del(keys);
+  }
+
   return res.status(201).json(
     new ApiResponse({
       statusCode: 201,
@@ -105,28 +111,47 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProduct = asyncHandler(async (req, res) => {
-  const cacheKey = "all_products";
-  const cachedProducts = await redisClient.get(cacheKey);
-  if (cachedProducts) {
-    return res.status(200).json(
-      new ApiResponse({
-        statusCode: 200,
-        message: "All products from Cache",
-        data: JSON.parse(cachedProducts),
-      })
-    );
-  }
-  const products = await Product.find({});
+  // const strringify = JSON.stringify(req.query);
+  // const cacheKey = `all_products_${strringify}`;
+  // const cachedProducts = await redisClient.get(cacheKey);
+  // if (cachedProducts) {
+  //   console.log("Cache hit");
+  //   return res.status(200).json(
+  //     new ApiResponse({
+  //       statusCode: 200,
+  //       message: "All products from Cache",
+  //       data: JSON.parse(cachedProducts),
+  //     })
+  //   );
+  // }
 
-  // Set the products in cache with an expiration time of 1 hour (3600 seconds)
-  await redisClient.setex(cacheKey, 3600, JSON.stringify(products));
+  const resultsPerPage = req.query.pageSize || 8;
+  // const products = await Product.find({});
+  const totalProducts = await Product.countDocuments();
+  let filteredProducts = new ApiFeatures(Product.find(), req.query)
+    .search()
+    .filter()
+    .sort()
+    .paginate(resultsPerPage);
+
+  const products = await filteredProducts.query;
+
+
+  // Set the products in cache with an expiration time of 1 hour(3600 seconds)
+  // await redisClient.setex(cacheKey, 3600, JSON.stringify(products));
 
 
   return res.status(200).json(
     new ApiResponse({
       statusCode: 200,
       message: "All products",
-      data: products,
+      data: {
+        products,
+        totalProducts,
+        resultsPerPage,
+        currentPage: req.query.page || 1,
+        totalPages: Math.ceil(totalProducts / resultsPerPage),
+      },
     })
   );
 });
@@ -219,7 +244,11 @@ const getProductByFarmer = asyncHandler(async (req, res) => {
 const deleteProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const cacheKey = `product_${id}`;
-  await redisClient.del(cacheKey);
+  const keys = await redisClient.keys("all_products_*");
+  if (keys.length > 0) {
+    // console.log(keys)
+    await redisClient.del(keys);
+  }
   const product = await Product.deleteOne({
     _id: id,
     farmer: req.user._id,

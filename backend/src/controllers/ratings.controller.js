@@ -51,8 +51,31 @@ const getRatings = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Product ID is required");
     }
 
-    // Populate user details and rename `userId` to `user`
-    const ratings = await Rating.find({ productId }).populate("userId", "name avatar").lean();
+
+    const ratings = await Rating.aggregate([{
+        $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+        }
+    }, {
+        $unwind: "$user"
+    }, {
+        $project: {
+            _id: 1,
+            rating: 1,
+            review: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            userId: "$user._id",
+            username: "$user.name",
+            profilePicture: "$user.avatar",
+        }
+    }
+    ]);
+
+
 
     if (ratings.length === 0) {
         throw new ApiError(404, "No ratings awailable for this product");
