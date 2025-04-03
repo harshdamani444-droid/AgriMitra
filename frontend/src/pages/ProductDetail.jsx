@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  CircleMinus,
-  CirclePlus,
-  Plus,
-  ShoppingBag,
-  ShoppingCart,
-  Star,
-} from "lucide-react";
+import { CircleMinus, CirclePlus, ShoppingCart, Star } from "lucide-react";
 import { getProductDetails } from "../redux/slices/Product/ProductDetailSlice";
 import Carousel from "react-material-ui-carousel";
 import { addToCart, getCartProducts } from "../redux/slices/Cart/GetCart";
@@ -57,7 +50,7 @@ const ProductDetail = () => {
   }
   useEffect(() => {
     dispatch(getProductDetails(id));
-    getRatings(product._id);
+    getRatings(id);
   }, [dispatch, id, reviewUpdate]);
 
   const handleAddToCart = async () => {
@@ -170,7 +163,7 @@ const ProductDetail = () => {
               setReviewUpdate={setReviewUpdate}
             />
           </div>
-          <div className="flex flex-wrap items-center gap-">
+          <div className="flex flex-wrap items-center">
             <ProductReviews review={review} />
           </div>
         </div>
