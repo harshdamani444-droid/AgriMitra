@@ -111,7 +111,7 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProduct = asyncHandler(async (req, res) => {
-  
+
   const strringify = JSON.stringify(req.query);
   const cacheKey = `all_products_${strringify}`;
   const cachedProducts = await redisClient.get(cacheKey);
