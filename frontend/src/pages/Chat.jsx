@@ -8,16 +8,22 @@ import {
   Smile,
   X,
   UserRoundCog,
+  Bell,
+  BellDot,
 } from "lucide-react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { io } from "socket.io-client";
+import MessageContent from "../components/MessageContent";
 
 const Chat = () => {
-  const { loading, error, user } = useSelector((state) => state.auth);
-  const messagesEndRef = useRef(null);
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const socketRef = useRef(null);
+  const getSenderFull = (loggedUser, users) => {
+    return users[0]._id === loggedUser._id ? users[1] : users[0];
   };
+  const [socketConnected, setSocketConnected] = useState(false);
+  const { loading, error, user } = useSelector((state) => state.auth);
+
   const [selectedChat, setSelectedChat] = useState(null);
   const [message, setMessage] = useState("");
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -31,15 +37,81 @@ const Chat = () => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [newGroupName, setNewGroupName] = useState("");
   const [allMessages, setAllMessages] = useState([]);
+  const [selectedChatCompare, setSelectedChatCompare] = useState(null);
+  const [typing, setTyping] = useState(false);
+  const [notification, setNotification] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false); // State to toggle notification list
+  const [notifications, setNotifications] = useState([]); // Notifications array
+
+  const handleNotificationClick = async (chat) => {
+    setSelectedChat(chat); // Set the selected chat
+    await fetchMessages(chat._id); // Fetch messages for the selected chat
+    setNotification((prev) =>
+      prev.filter((notif) => notif.chat._id !== chat._id)
+    ); // Remove the notification after clicking
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchChats();
+    setSelectedChatCompare(selectedChat);
   }, [selectedChat, allMessages]);
+  useEffect(() => {
+    if (user) {
+      socketRef.current = io("http://localhost:4000");
+      socketRef.current.emit("setup", user._id);
+      socketRef.current.on("connected", () => {
+        setSocketConnected(true);
+      });
+    }
+  }, [user]);
+  // console.log("-----", notification);
+  useEffect(() => {
+    // console.log("Socket connected:", socketConnected);
+    if (user) {
+      // console.log("Socket connected insidde user:", socketConnected);
+      socketRef.current.on("messageReceived", (newMessage) => {
+        console.log("newMessage", newMessage);
+        if (
+          !selectedChatCompare ||
+          selectedChatCompare._id !== newMessage.chat._id
+        ) {
+          if (!notification.includes(newMessage)) {
+            setNotification([...notification, newMessage]);
+            fetchChats();
+            // fetchMessages(newMessage.chat._id);
+          }
+        } else {
+          fetchMessages(newMessage.chat._id);
+        }
+      });
+      socketRef.current.on("typing", () => {
+        console.log("typing");
+        setTyping(true);
+      });
+      socketRef.current.on("stopTyping", () => {
+        console.log("stopTyping");
+        setTyping(false);
+      });
+    }
+  });
   const typingHandler = (e) => {
     setMessage(e.target.value);
+    if (!socketRef.current) return;
+    if (!typing) {
+      socketRef.current.emit("typing", selectedChat._id);
+    }
+    let lastTypingTime = new Date().getTime();
+    setTimeout(() => {
+      let timeNow = new Date().getTime();
+      let timeDiff = timeNow - lastTypingTime;
+      console.log("timeDiff", timeDiff);
+      if (timeDiff >= 3000) {
+        // console.log("koko");
+        socketRef.current.emit("stopTyping", selectedChat._id);
+      }
+    }, 3000);
   };
-
-  const handleMessageSend = async (e) => {};
   const fetchMessages = async (chatId) => {
     try {
       const response = await axios.get(
@@ -48,8 +120,10 @@ const Chat = () => {
           withCredentials: true,
         }
       );
-      console.log(response.data.data);
+      // console.log(response.data.data);
+      socketRef.current.emit("joinChat", chatId);
       setAllMessages(response.data.data);
+      scrollToBottom(); // Scroll to the bottom after fetching messages
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -111,6 +185,8 @@ const Chat = () => {
       );
       // console.log(response.data.data);
       setSelectedChat(response.data.data);
+      fetchChats();
+      fetchMessages(response.data.data._id);
     } catch (error) {
       console.error("Error selecting chat:", error);
     }
@@ -128,10 +204,12 @@ const Chat = () => {
         },
         { withCredentials: true }
       );
-      console.log(response.data.data);
+      // console.log(response.data.data);
+      socketRef.current.emit("newMesssage", response.data.data);
       // Update the allMessages state with the new message
       setAllMessages((prev) => [...prev, response.data.data]);
       setMessage("");
+
       fetchMessages(selectedChat._id);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -208,13 +286,67 @@ const Chat = () => {
               <div className="p-4 border-b">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">Messages</h2>
-                  <button
-                    onClick={() => setShowCreateGroup(true)}
-                    className="p-2 hover:bg-gray-100 rounded-full"
-                    title="Create Group Chat"
-                  >
-                    <Users className="h-5 w-5 text-gray-600" />
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative">
+                      <div
+                        className="hover:bg-red-100 rounded-full p-2 relative cursor-pointer"
+                        onMouseEnter={() => {
+                          setShowNotifications(true);
+                        }}
+                        onMouseLeave={() => {
+                          setShowNotifications(false);
+                          setNotification([]);
+                        }}
+                      >
+                        <BellDot className="h-5 w-5 text-red-600" />
+                        {notification.length > 0 && (
+                          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                            {notification.length}
+                          </span>
+                        )}
+                      </div>
+                      {showNotifications && (
+                        <div
+                          className="absolute z-10 
+                        bg-white border rounded-lg shadow-lg mt-2 w-64 max-h-60 overflow-y-auto"
+                          onMouseEnter={() => setShowNotifications(true)}
+                          onMouseLeave={() => setShowNotifications(false)}
+                        >
+                          {notification.length > 0 ? (
+                            notification.map((notif) => (
+                              <div
+                                key={notif._id}
+                                className="p-2 hover:bg-gray-100 cursor-pointer"
+                                onClick={() =>
+                                  handleNotificationClick(notif.chat)
+                                }
+                              >
+                                <p className="text-sm font-medium text-gray-900">
+                                  {notif.chat.isGroupChat
+                                    ? notif.chat.chatName
+                                    : notif.sender.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {notif.content}
+                                </p>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-2 text-sm text-gray-500">
+                              No new notifications
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setShowCreateGroup(true)}
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                      title="Create Group Chat"
+                    >
+                      <Users className="h-5 w-5 text-gray-600" />
+                    </button>
+                  </div>
                 </div>
                 <div className="relative">
                   <input
@@ -257,7 +389,7 @@ const Chat = () => {
               <div className=" overflow-y-auto  max-h-[calc(90vh-14rem)]">
                 {chats.map((chat) => (
                   <div
-                    key={chat.id}
+                    key={chat._id}
                     onClick={async () => {
                       setSelectedChat(chat);
                       await fetchMessages(chat._id);
@@ -274,13 +406,13 @@ const Chat = () => {
                       ) : (
                         <div className="relative">
                           <img
-                            src={chat.users[1].avatar}
-                            alt={chat.users[1].name}
+                            src={getSenderFull(user, chat.users).avatar}
+                            alt={getSenderFull(user, chat.users).name}
                             className="h-12 w-12 rounded-full"
                           />
                           <span
                             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                              chat.users[1].isOnline
+                              getSenderFull(user, chat.users).isOnline
                                 ? "bg-green-500"
                                 : "bg-gray-400"
                             }`}
@@ -291,11 +423,11 @@ const Chat = () => {
                         <h3 className="text-sm font-medium text-gray-900 truncate">
                           {chat.isGroupChat
                             ? chat.chatName
-                            : chat.users[1].name}
+                            : getSenderFull(user, chat.users).name}
                         </h3>
-                        {chat.lastMessage && (
+                        {chat.latestMessage && (
                           <p className="text-sm text-gray-500 truncate">
-                            {chat.lastMessage.text}
+                            {chat.latestMessage.content}
                           </p>
                         )}
                       </div>
@@ -319,13 +451,13 @@ const Chat = () => {
                       ) : (
                         <div className="relative">
                           <img
-                            src={selectedChat.users[1].avatar}
-                            alt={selectedChat.users[1].name}
+                            src={getSenderFull(user, selectedChat.users).avatar}
+                            alt={getSenderFull(user, selectedChat.users).name}
                             className="h-10 w-10 rounded-full"
                           />
                           <span
                             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                              selectedChat.users[1].isOnline
+                              getSenderFull(user, selectedChat.users).isOnline
                                 ? "bg-green-500"
                                 : "bg-gray-400"
                             }`}
@@ -336,7 +468,7 @@ const Chat = () => {
                         <h3 className="font-medium text-gray-900">
                           {selectedChat.isGroupChat
                             ? selectedChat.chatName
-                            : selectedChat.users[1].name}
+                            : getSenderFull(user, selectedChat.users).name}
                         </h3>
                         <p className="text-sm text-gray-500">
                           {selectedChat.isGroupChat
@@ -354,7 +486,6 @@ const Chat = () => {
                           setGroupSettings(true);
                           setSelectedGroup(selectedChat);
                           setNewGroupName(selectedChat.chatName);
-                          //   console.log(selectedChat);
                         }}
                       >
                         <UserRoundCog className="h-6 w-6 text-gray-600" />
@@ -362,75 +493,20 @@ const Chat = () => {
                     </div>
                   </div>
 
-                  <div
-                    ref={messagesEndRef}
-                    className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[calc(90vh-14rem)]"
-                  >
-                    {allMessages.map((message, index) => {
-                      const isCurrentUser = message.sender._id === user._id;
-                      const isSameSender =
-                        index > 0 &&
-                        allMessages[index - 1].sender._id ===
-                          message.sender._id;
-
-                      return (
-                        <div
-                          key={message._id}
-                          className={`flex ${
-                            isCurrentUser ? "justify-end" : "justify-start"
-                          } items-end space-x-2 `}
-                        >
-                          <div>
-                            <img
-                              src={message.sender.avatar}
-                              alt={message.sender.name}
-                              className="h-8 w-8 rounded-full"
-                            />
-                          </div>
-                          <div
-                            className={`${
-                              isCurrentUser
-                                ? "bg-green-600 text-white"
-                                : "bg-gray-100 text-gray-900"
-                            } rounded-lg px-4 py-2 max-w-[70%] ${
-                              isSameSender ? "mt-1" : "mt-4"
-                            }`}
-                          >
-                            {!isSameSender && (
-                              <>
-                                <p className="text-xs text-black mb-1">
-                                  {message.sender.name}{" "}
-                                </p>
-                              </>
-                            )}
-                            <p>{message.content}</p>
-                            <p
-                              className={`text-xs mt-1 ${
-                                isCurrentUser
-                                  ? "text-green-100"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {new Date(message.createdAt).toLocaleTimeString(
-                                "en-US",
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {/* <div ref={messagesEndRef} />; */}
-                  </div>
-
+                  <MessageContent allMessages={allMessages} user={user} />
                   <div className="p-4 border-t">
                     <form
                       onSubmit={handleSendMessage}
                       className="flex space-x-4"
                     >
+                      {typing && (
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="h-2 w-2 bg-green-500 rounded-full animate-ping" />
+                          <span className="text-sm text-gray-500">
+                            Typing...
+                          </span>
+                        </div>
+                      )}
                       <button
                         type="button"
                         className="p-2 hover:bg-gray-100 rounded-full"

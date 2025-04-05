@@ -28,11 +28,9 @@ import FertilizerPrediction from "./components/FertilizerPrediction";
 import Payment from "./components/Payment";
 import FarmerDashboard from "./pages/FarmerDashboard";
 import NewProduct from "./pages/NewProduct";
-import { io } from "socket.io-client";
 import Chat from "./pages/Chat";
 
 function App() {
-  const socket = io("http://localhost:4000");
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getUser());
