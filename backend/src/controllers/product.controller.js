@@ -241,6 +241,7 @@ const getProductByFarmer = asyncHandler(async (req, res) => {
   );
 });
 
+<<<<<<< HEAD
 // const deleteProductById = asyncHandler(async (req, res) => {
 //   const { id } = req.params;
 //   const cacheKey = `product_${id}`;
@@ -274,11 +275,26 @@ const deleteProductById = asyncHandler(async (req, res) => {
     { isDeleted: true },
     { new: true }
   );
+=======
+const deleteProductById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const cacheKey = `product_${id}`;
+  const keys = await redisClient.keys("all_products_*");
+  if (keys.length > 0) {
+    // console.log(keys)
+    await redisClient.del(keys);
+  }
+  const product = await Product.deleteOne({
+    _id: id,
+    farmer: req.user._id,
+  });
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
 
   if (!product) {
     throw new ApiError(404, "Product not found");
   }
 
+<<<<<<< HEAD
   // clear redis cache if needed
   const cacheKey = `product_${id}`;
   const keys = await redisClient.keys("all_products_*");
@@ -290,12 +306,21 @@ const deleteProductById = asyncHandler(async (req, res) => {
     new ApiResponse({
       statusCode: 200,
       message: "Product soft-deleted successfully",
+=======
+  return res.status(200).json(
+    new ApiResponse({
+      statusCode: 200,
+      message: "Product deleted successfully",
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
       data: null,
     })
   );
 });
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
 const updateProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const cacheKey = `product_${id}`;

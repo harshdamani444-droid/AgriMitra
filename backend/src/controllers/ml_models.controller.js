@@ -2,17 +2,31 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import axios from "axios";
+<<<<<<< HEAD
 import fs from "fs";
 import FormData from "form-data";
 import path from "path";
 
 const predictSoilFertily = async (req, res) => {
     const requiredFields = ["N", "P", "K", "ph", "ec", "oc", "S", "zn", "fe", "cu", "Mn", "B"];
+=======
+
+
+const predictSoilFertily = async (req, res) => {
+    const requiredFields = ["N", "P", "K", "ph", "ec", "oc", "S", "zn", "fe", "cu", "Mn", "B"];
+
+    // Ensure all required fields are present and not empty
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
     for (const field of requiredFields) {
         if (!req.body.hasOwnProperty(field) || req.body[field] === "") {
             return res.status(400).json({ error: `Field "${field}" is required and cannot be empty.` });
         }
     }
+<<<<<<< HEAD
+=======
+
+    // Convert named fields into an array
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
     const featureArray = requiredFields.map(field => Number(req.body[field]));
 
     try {
@@ -31,11 +45,21 @@ const predictSoilFertily = async (req, res) => {
 
 const predictCrop = async (req, res) => {
     const requiredFields = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"];
+<<<<<<< HEAD
+=======
+
+    // Validate all required fields
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
     for (const field of requiredFields) {
         if (!req.body.hasOwnProperty(field) || req.body[field] === "") {
             return res.status(400).json({ error: `Field "${field}" is required and cannot be empty.` });
         }
     }
+<<<<<<< HEAD
+=======
+
+    // Convert named fields into an array
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
     const featureArray = requiredFields.map(field => Number(req.body[field]));
 
     try {
@@ -54,6 +78,11 @@ const predictCrop = async (req, res) => {
 
 const predictFertilizer = async (req, res) => {
     const requiredFields = ["temperature", "humidity", "moisture", "soil_type", "crop_type", "nitrogen", "potassium", "phosphorous"];
+<<<<<<< HEAD
+=======
+
+    // Validate all required fields
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
     for (const field of requiredFields) {
         if (!req.body.hasOwnProperty(field) || req.body[field] === "") {
             return res.status(400).json({ error: `Field "${field}" is required and cannot be empty.` });
@@ -61,6 +90,7 @@ const predictFertilizer = async (req, res) => {
     }
 
     if (!["Black", "Clayey", "Loamy", "Red", "Sandy"].includes(req.body.soil_type)) {
+<<<<<<< HEAD
         return res.status(400).json({ error: `Invalid soil type.` });
     }
 
@@ -68,6 +98,16 @@ const predictFertilizer = async (req, res) => {
         return res.status(400).json({ error: `Invalid crop type.` });
     }
 
+=======
+        return res.status(400).json({ error: `Invalid soil type. Must be one of: "clay", "silt", "loam"` });
+    }
+
+    if (!["Maize", "Sugarcane", "Cotton", "Tobacco", "Paddy", "Barley", "Wheat", "Millets", "Ground Nuts", "Oil seeds", "Pulses"].includes(req.body.crop_type)) {
+        return res.status(400).json({ error: `Invalid crop type. Must be one of: "rice", "wheat", "maize", "cotton", "sugarcane"` });
+    }
+
+    // Convert named fields into an array
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
     const featureArray = [
         Number(req.body.temperature),
         Number(req.body.humidity),
@@ -93,6 +133,7 @@ const predictFertilizer = async (req, res) => {
     }
 };
 
+<<<<<<< HEAD
 const predictRice = asyncHandler(async (req, res) => {
     if (!req?.files?.image?.[0]?.path) {
         throw new ApiError(400, "Image is required");
@@ -215,3 +256,6 @@ const predictCropYieldPrediction = asyncHandler(async (req, res) => {
 });
 
 export { predictSoilFertily, predictCrop, predictFertilizer, predictRice, predictCottonLeafDisease, predictCropYieldPrediction };
+=======
+export { predictSoilFertily, predictCrop, predictFertilizer };
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
