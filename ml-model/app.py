@@ -5,14 +5,18 @@ import logging
 import os
 import cv2
 import tempfile
-import requests
+from werkzeug.utils import secure_filename
 from tensorflow.keras.models import load_model
 from flask_cors import CORS
 from tensorflow.keras.preprocessing import image as keras_image
 import pandas as pd
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # gets backend folder path
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "public", "temp")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+
+# Create uploads directory if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -20,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 
 # Constants
 RICE_MODEL_PATH = './Rice_classification_model/rice_model.h5'
@@ -131,26 +137,31 @@ def predict_fertilizer():
 def predict_rice():
     if request.method == "OPTIONS":
         return jsonify({}), 200
+    
+    temp_file_path = None
+    
     try:
-        data = request.get_json()
-        if "image_path" not in data:
-            return jsonify({'error': 'Missing image_path in request'}), 400
-
-        image_path = data["image_path"]
-        logger.info(f"Received image_path for rice prediction: {image_path}")
+        # Check if the post request has the file part
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file in request'}), 400
         
-        # Adjust path from where app.py is located
-        relative_image_path = os.path.normpath(os.path.join("..", "backend", image_path))
-        full_path = os.path.abspath(relative_image_path)
-        logger.info(f"Resolved full path: {full_path}")
-
-        if not os.path.exists(full_path):
-            logger.error(f"Image file not found at: {full_path}")
-            return jsonify({'error': f"Image file not found at: {full_path}"}), 400
-
-        image = cv2.imread(full_path)
+        file = request.files['image']
+        
+        # If user does not select file, browser might send empty file
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+            
+        # Save uploaded file to temporary location
+        filename = secure_filename(file.filename)
+        temp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(temp_file_path)
+        
+        logger.info(f"Saved uploaded image for rice prediction to: {temp_file_path}")
+        
+        # Process the image
+        image = cv2.imread(temp_file_path)
         if image is None:
-            logger.error(f"cv2 failed to read image at: {full_path}")
+            logger.error(f"cv2 failed to read image at: {temp_file_path}")
             return jsonify({'error': 'Failed to read image using OpenCV'}), 400
 
         image = cv2.resize(image, RICE_IMG_SIZE)
@@ -172,41 +183,45 @@ def predict_rice():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        if full_path and os.path.exists(full_path):
+        # Clean up: Delete the temp file
+        if temp_file_path and os.path.exists(temp_file_path):
             try:
-                os.remove(full_path)
-                logger.info(f"Deleted image after processing: {full_path}")
+                os.remove(temp_file_path)
+                logger.info(f"Deleted temporary image after processing: {temp_file_path}")
             except Exception as e:
-                logger.warning(f"Failed to delete image: {full_path} - {e}")
+                logger.warning(f"Failed to delete temporary image: {temp_file_path} - {e}")
 
 
 # ======== COTTON DISEASE PREDICTION ========
 @app.route("/predict/cotton", methods=["POST", "OPTIONS"])
 def predict_cotton():
-    full_path = None
     if request.method == "OPTIONS":
         return jsonify({}), 200
+    
+    temp_file_path = None
+    
     try:
-        data = request.get_json()
-        if "image_path" not in data:
-            return jsonify({'error': 'Missing image_path in request'}), 400
-
-        image_path = data["image_path"]
-        logger.info(f"Received image_path for cotton prediction: {image_path}")
-
-        # Adjust path from where app.py is located
-        relative_image_path = os.path.normpath(os.path.join("..", "backend", image_path))
-        full_path = os.path.abspath(relative_image_path)
-        logger.info(f"Resolved full path: {full_path}")
-
-
-        if not os.path.exists(full_path):
-            logger.error(f"Image file not found at: {full_path}")
-            return jsonify({'error': f"Image file not found at: {full_path}"}), 400
-
-        image = cv2.imread(full_path)
+        # Check if the post request has the file part
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file in request'}), 400
+        
+        file = request.files['image']
+        
+        # If user does not select file, browser might send empty file
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+            
+        # Save uploaded file to temporary location
+        filename = secure_filename(file.filename)
+        temp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(temp_file_path)
+        
+        logger.info(f"Saved uploaded image for cotton prediction to: {temp_file_path}")
+        
+        # Process the image
+        image = cv2.imread(temp_file_path)
         if image is None:
-            logger.error(f"cv2 failed to read image at: {full_path}")
+            logger.error(f"cv2 failed to read image at: {temp_file_path}")
             return jsonify({'error': 'Failed to read image using OpenCV'}), 400
 
         image = cv2.resize(image, COTTON_IMG_SIZE)
@@ -228,12 +243,16 @@ def predict_cotton():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        if full_path and os.path.exists(full_path):
+        # Clean up: Delete the temp file
+        if temp_file_path and os.path.exists(temp_file_path):
             try:
-                os.remove(full_path)
-                logger.info(f"Deleted image after processing: {full_path}")
+                os.remove(temp_file_path)
+                logger.info(f"Deleted temporary image after processing: {temp_file_path}")
             except Exception as e:
-                logger.warning(f"Failed to delete image: {full_path} - {e}")
+                logger.warning(f"Failed to delete temporary image: {temp_file_path} - {e}")
+
+# Keep existing crop yield prediction API route unchanged...
+
 
 # ======== CROP YIELD PREDICTION ========
 @app.route("/predict/yield", methods=["POST", "OPTIONS"])
