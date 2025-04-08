@@ -85,10 +85,38 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
+<<<<<<< HEAD
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      select: false // hide by default when querying
+    },
+=======
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
   },
   {
     timestamps: true,
   }
 );
 
+<<<<<<< HEAD
+// GLOBAL QUERY FILTER MIDDLEWARE FOR SOFT DELETE
+function autoExcludeDeleted(next) {
+  if (!this.getFilter().hasOwnProperty("isDeleted")) {
+    this.where({ isDeleted: false });
+  }
+  next();
+}
+
+productSchema.pre("find", autoExcludeDeleted);
+productSchema.pre("findOne", autoExcludeDeleted);
+productSchema.pre("findOneAndUpdate", autoExcludeDeleted);
+productSchema.pre("countDocuments", autoExcludeDeleted);
+productSchema.pre("aggregate", function (next) {
+  this.pipeline().unshift({ $match: { isDeleted: false } });
+  next();
+});
+
+=======
+>>>>>>> 1dce92c52e2c6a29cf17be35bf423f2db4460095
 export const Product = mongoose.model("Product", productSchema);
