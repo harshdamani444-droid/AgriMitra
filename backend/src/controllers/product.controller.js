@@ -241,31 +241,60 @@ const getProductByFarmer = asyncHandler(async (req, res) => {
   );
 });
 
+// const deleteProductById = asyncHandler(async (req, res) => {
+//   const { id } = req.params;
+//   const cacheKey = `product_${id}`;
+//   const keys = await redisClient.keys("all_products_*");
+//   if (keys.length > 0) {
+//     // console.log(keys)
+//     await redisClient.del(keys);
+//   }
+//   const product = await Product.deleteOne({
+//     _id: id,
+//     farmer: req.user._id,
+//   });
+
+//   if (!product) {
+//     throw new ApiError(404, "Product not found");
+//   }
+
+//   return res.status(200).json(
+//     new ApiResponse({
+//       statusCode: 200,
+//       message: "Product deleted successfully",
+//       data: null,
+//     })
+//   );
+// });
+
 const deleteProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const cacheKey = `product_${id}`;
-  const keys = await redisClient.keys("all_products_*");
-  if (keys.length > 0) {
-    // console.log(keys)
-    await redisClient.del(keys);
-  }
-  const product = await Product.deleteOne({
-    _id: id,
-    farmer: req.user._id,
-  });
+  const product = await Product.findOneAndUpdate(
+    { _id: id, farmer: req.user._id },
+    { isDeleted: true },
+    { new: true }
+  );
 
   if (!product) {
     throw new ApiError(404, "Product not found");
   }
 
+  // clear redis cache if needed
+  const cacheKey = `product_${id}`;
+  const keys = await redisClient.keys("all_products_*");
+  if (keys.length > 0) {
+    await redisClient.del(keys);
+  }
+
   return res.status(200).json(
     new ApiResponse({
       statusCode: 200,
-      message: "Product deleted successfully",
+      message: "Product soft-deleted successfully",
       data: null,
     })
   );
 });
+
 
 const updateProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
