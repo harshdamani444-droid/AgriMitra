@@ -1,0 +1,67 @@
+export const DB_NAME = "AgriMitra";
+export const roles = ["farmer", "buyer", "admin"];
+
+export const UNIT_OF_SIZE = ["kg", "g", "pound"];
+
+export const CROP_CATEGORY = [
+  "Rice",
+  "Wheat",
+  "Barley",
+  "Corn",
+  "Oats",
+  "Rye",
+  "Millets",
+  "Sorghum",
+  "Quinoa",
+  "Buckwheat",
+  "Apple",
+  "Orange",
+  "Banana",
+  "Mango",
+  "Papaya",
+  "Pineapple",
+  "Guava",
+  "Grapes",
+  "Strawberry",
+  "Watermelon",
+  "Tomato",
+  "Potato",
+  "Onion",
+  "Garlic",
+  "Carrot",
+  "Cabbage",
+  "Cauliflower",
+  "Spinach",
+  "Lettuce",
+  "Broccoli",
+  "Peas",
+  "Chickpeas",
+  "Lentils",
+  "Soybeans",
+  "Kidney Beans",
+  "Black Beans",
+  "Green Gram",
+  "Pigeon Peas",
+  "Cowpeas",
+  "Faba Beans",
+  "Sugarcane",
+  "Cotton",
+  "Jute",
+  "Tea",
+  "Coffee",
+  "Rubber",
+  "Coconut",
+  "Sunflower",
+  "Mustard",
+  "Groundnut",
+];
+
+export const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+export const ORDER_STATUS = [
+  "Pending",
+  "Confirmed",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+];
