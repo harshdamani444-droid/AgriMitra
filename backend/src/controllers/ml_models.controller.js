@@ -2,7 +2,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import axios from "axios";
-
+import fs from "fs";
+import FormData from "form-data";
+import path from "path";
 
 const predictSoilFertily = async (req, res) => {
     const requiredFields = ["N", "P", "K", "ph", "ec", "oc", "S", "zn", "fe", "cu", "Mn", "B"];
