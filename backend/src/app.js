@@ -25,13 +25,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// app.use(
-//   cors({
-//     origin: process.env.CORS_ORIGIN,
-//     credentials: true,
-//   })
-// );
-
 app.use(bodyParser.json());
 
 app.use(
@@ -69,7 +62,7 @@ import productRoutes from "./routes/product.routes.js";
 
 import cartRoutes from "./routes/cart.routes.js";
 
-import chatRoutes from "./routes/chatbot.routes.js";
+import aiChatRoutes from "./routes/chatbot.routes.js";
 
 import mlPredictRoutes from "./routes/ml_models.routes.js";
 
@@ -79,15 +72,20 @@ import ratings from "./routes/ratings.routes.js";
 
 import orderRoutes from "./routes/order.routes.js"
 
+import chatRoutes from "./routes/chat.routes.js";
+
+import messageRoutes from "./routes/message.route.js";
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
-app.use("/api/v1/chatBot", chatRoutes);
+app.use("/api/v1/chatBot", aiChatRoutes);
 app.use("/api/v1/predict", limiter, mlPredictRoutes);
 app.use("/api/v1/wishlist", Wishlist);
 app.use("/api/v1/ratings", ratings);
 app.use("/api/v1/order", orderRoutes);
+app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/message", messageRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

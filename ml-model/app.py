@@ -8,7 +8,7 @@ import tempfile
 from werkzeug.utils import secure_filename
 from tensorflow.keras.models import load_model
 from flask_cors import CORS
-from tensorflow.keras.preprocessing import image as keras_image
+from tensorflow.keras.preprocessing import image 
 import pandas as pd
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -36,6 +36,17 @@ COTTON_MODEL_PATH = './Cotton_Leaf_Disease_prediction/cotton_model_final.h5'
 COTTON_CLASS_LABELS = ['bacterial_blight', 'curl_virus', 'fussarium_wilt', 'healthy']
 COTTON_IMG_SIZE = (128, 128)
 
+MANGO_MODEL_PATH = './Mango_classification_model/mango_leaf_model.h5'
+MANGO_CLASS_LABELS = [
+    'Anthracnose',
+    'Bacterial Canker',
+    'Cutting Weevil',
+    'Die Back',
+    'Gall Midge',
+    'Healthy',
+    'Powdery Mildew',
+    'Sooty Mould'
+]
 # Load all models and encoders
 try:
     with open("./Crop_yield_prediction_model/random_forest_yield_model.pkl", "rb") as f:
@@ -62,6 +73,7 @@ try:
         rice_labels = pickle.load(f)
 
     cotton_model = load_model(COTTON_MODEL_PATH)
+    mango_model = load_model(MANGO_MODEL_PATH)  # Assuming same model for mango
 
     logger.info("All models and encoders loaded successfully.")
 except Exception as e:
@@ -252,7 +264,63 @@ def predict_cotton():
                 logger.warning(f"Failed to delete temporary image: {temp_file_path} - {e}")
 
 # Keep existing crop yield prediction API route unchanged...
+@app.route("/predict/mango", methods=["POST", "OPTIONS"])
+def predict_mango():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
 
+    temp_file_path = None
+
+
+    try:
+        # Check if the post request has the file part
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image uploaded'}), 400
+
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        filename = secure_filename(file.filename)
+        temp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(temp_file_path)
+    
+        logger.info(f"Saved uploaded image for cotton prediction to: {temp_file_path}")
+
+    # Load image and preprocess
+        img = image.load_img(temp_file_path, target_size=(128, 128))
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)
+        img_array = img_array / 255.0  # normalize
+
+    # Predict
+        predictions = mango_model.predict(img_array)
+        class_index = np.argmax(predictions)
+        result = MANGO_CLASS_LABELS[class_index]
+        confidence = float(np.max(predictions))    
+        return jsonify({
+                'predicted_class': result,   
+                'confidence': f'{confidence * 100:.2f}%'
+            })
+        
+
+    except Exception as e:
+        logger.exception("An error occurred during mango prediction.")
+        return jsonify({'error': 'Internal server error', 'message': str(e)}), 500
+
+    finally:
+        # Optionally clean up the temp file
+         # Clean up: Delete the temp file
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+                logger.info(f"Deleted temporary image after processing: {temp_file_path}")
+            except Exception as e:
+                logger.warning(f"Failed to delete temporary image: {temp_file_path} - {e}")
+
+    
+    
+    
 
 # ======== CROP YIELD PREDICTION ========
 @app.route("/predict/yield", methods=["POST", "OPTIONS"])

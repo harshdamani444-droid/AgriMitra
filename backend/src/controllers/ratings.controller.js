@@ -11,30 +11,34 @@ const createRating = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Rating, review, and productId are required");
     }
 
-    if(!Number.isInteger(rating))
-    {
+    if (!Number.isInteger(rating)) {
         throw new ApiError(400, "Rating must be an integer");
     }
 
     if (rating < 1 || rating > 5) {
         throw new ApiError(400, "Rating must be between 1 and 5");
     }
+    const isReviewed = await Rating.findOne({ userId: req.user._id, productId });
+    let newRating = null;
+    if (isReviewed) {
+        newRating = await Rating.findByIdAndUpdate(isReviewed._id, { rating, review });
+    } else {
+        const product = await Product.findById(productId);
 
-    const product = await Product.findById(productId);
+        if (!product) {
+            throw new ApiError(404, "Product not found");
+        }
 
-    if (!product) {
-        throw new ApiError(404, "Product not found");
+        newRating = new Rating({
+            rating,
+            review,
+            userId: req.user._id,
+            productId,
+        });
+
+        await newRating.save();
+
     }
-
-    const newRating = new Rating({
-        rating,
-        review,
-        userId: req.user._id,
-        productId,
-    });
-
-    await newRating.save();
-
     return res.status(201).json(
         new ApiResponse({
             statusCode: 201,
@@ -122,53 +126,3 @@ const getRatings = asyncHandler(async (req, res) => {
 });
 
 export { createRating, getRatings };
-
-
-// const getRatings = asyncHandler(async (req, res) => {
-//     const { productId } = req.params;
-
-//     if (!productId) {
-//         throw new ApiError(400, "Product ID is required");
-//     }
-
-//     const ratings = await Rating.find({ productId });
-
-//     return res.status(200).json(
-//         new ApiResponse({
-//             statusCode: 200,
-//             data: ratings,
-//             message: "Ratings retrieved successfully",
-//         })
-//     );
-// });
-
-
-
-
-
-// const getRatings = asyncHandler(async (req, res) => {
-//     const { productId } = req.params;
-
-//     if (!productId) {
-//         throw new ApiError(400, "Product ID is required");
-//     }
-
-//     const ratings = await Rating.find({ productId });
-
-//     let totalRating = 0;
-//     let totalRatings = ratings.length;
-
-//     ratings.forEach((rating) => {
-//         totalRating += rating.rating;
-//     });
-
-//     const averageRating = totalRatings > 0 ? (totalRating / totalRatings).toFixed(1) : "0.0";
-
-//     return res.status(200).json(
-//         new ApiResponse({
-//             statusCode: 200,
-//             data: { ratings, averageRating: parseFloat(averageRating), totalRatings },
-//             message: "Ratings retrieved successfully",
-//         })
-//     );
-// });
