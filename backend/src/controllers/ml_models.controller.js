@@ -104,4 +104,160 @@ const predictFertilizer = async (req, res) => {
     }
 };
 
-export { predictSoilFertily, predictCrop, predictFertilizer };
+const predictMango = async (req, res) => {
+    const image = req.file.path;
+
+    if (!image) {
+        return res.status(400).json({ error: "Image file is required" });
+    }
+
+    const form = new FormData();
+    form.append('image', fs.createReadStream(image));
+    try {
+        const response = await axios.post('http://localhost:5000/predict/mango', form, {
+            headers: form.getHeaders(),
+        });
+
+        fs.unlink(image, (err) => {
+            if (err) console.error(`Failed to delete image: ${image}`, err);
+        });
+
+        return res.status(200).json(new ApiResponse({
+            statusCode: 200,
+            data: response.data,
+            message: "Mango Leaf Disease prediction generated successfully"
+        }));
+
+
+    } catch (error) {
+        fs.unlink(image, (err) => {
+            if (err) console.error(`Failed to delete image: ${image}`, err);
+        });
+        throw new ApiError(500, "Token generation failed", error);
+
+    }
+
+}
+
+const predictRice = asyncHandler(async (req, res) => {
+    if (!req?.files?.image?.[0]?.path) {
+        throw new ApiError(400, "Image is required");
+    }
+
+    const imageLocalPath = req.files.image[0].path;
+
+    try {
+        // Create a FormData instance
+        const formData = new FormData();
+
+        // Append the image file as a readable stream
+        formData.append('image', fs.createReadStream(imageLocalPath));
+
+        // Send FormData with proper headers to Flask API
+        const response = await axios.post("http://localhost:5000/predict/rice", formData, {
+            headers: {
+                ...formData.getHeaders()
+            },
+            // Increase timeout if needed for large images
+            timeout: 30000
+        });
+
+        // Delete the temporary image after prediction
+        fs.unlink(imageLocalPath, (err) => {
+            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+        });
+
+        return res.status(200).json(new ApiResponse({
+            statusCode: 200,
+            data: response.data,
+            message: "Rice prediction generated successfully",
+        }));
+    } catch (error) {
+        // Make sure to delete the image even if the prediction fails
+        fs.unlink(imageLocalPath, (err) => {
+            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+        });
+        throw new ApiError(500, "Rice prediction failed", error);
+    }
+});
+
+const predictCottonLeafDisease = asyncHandler(async (req, res) => {
+    if (!req?.files?.image?.[0]?.path) {
+        throw new ApiError(400, "Image is required");
+    }
+
+    const imageLocalPath = req.files.image[0].path;
+
+    try {
+        // Create a FormData instance
+        const formData = new FormData();
+
+        // Append the image file as a readable stream
+        formData.append('image', fs.createReadStream(imageLocalPath));
+
+        // Send FormData with proper headers to Flask API
+        const response = await axios.post("http://localhost:5000/predict/cotton", formData, {
+            headers: {
+                ...formData.getHeaders()
+            },
+            // Increase timeout if needed for large images
+            timeout: 30000
+        });
+
+        // Delete the temporary image after prediction
+        fs.unlink(imageLocalPath, (err) => {
+            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+        });
+
+        return res.status(200).json(new ApiResponse({
+            statusCode: 200,
+            data: response.data,
+            message: "Cotton leaf disease prediction generated successfully",
+        }));
+    } catch (error) {
+        // Make sure to delete the image even if the prediction fails
+        fs.unlink(imageLocalPath, (err) => {
+            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+        });
+        throw new ApiError(500, "Cotton leaf disease prediction failed", error);
+    }
+});
+
+const predictCropYieldPrediction = asyncHandler(async (req, res) => {
+    const requiredFields = [
+        "Soil_Type", "Crop", "Weather_Condition",
+        "Temperature_Celsius", "Rainfall_mm", "Days_to_Harvest",
+        "Fertilizer_Used", "Irrigation_Used"
+    ];
+
+    for (const field of requiredFields) {
+        if (!req.body.hasOwnProperty(field) || req.body[field] === "") {
+            return res.status(400).json({ error: `Field "${field}" is required and cannot be empty.` });
+        }
+    }
+
+    const inputData = {
+        Soil_Type: req.body.Soil_Type,
+        Crop: req.body.Crop,
+        Weather_Condition: req.body.Weather_Condition,
+        Temperature_Celsius: Number(req.body.Temperature_Celsius),
+        Rainfall_mm: Number(req.body.Rainfall_mm),
+        Days_to_Harvest: Number(req.body.Days_to_Harvest),
+        Fertilizer_Used: req.body.Fertilizer_Used === "true" || req.body.Fertilizer_Used === true,
+        Irrigation_Used: req.body.Irrigation_Used === "true" || req.body.Irrigation_Used === true
+    };
+
+    try {
+        const response = await axios.post("http://localhost:5000/predict/yield", inputData);
+
+        return res.status(200).json(new ApiResponse({
+            statusCode: 200,
+            data: response.data,
+            message: "Crop yield prediction generated successfully"
+        }));
+    } catch (error) {
+        throw new ApiError(500, "Crop yield prediction failed", error);
+    }
+});
+
+export { predictSoilFertily, predictCrop, predictFertilizer, predictMango, predictRice, predictCottonLeafDisease, predictCropYieldPrediction }; 
