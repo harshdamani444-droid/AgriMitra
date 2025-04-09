@@ -24,15 +24,7 @@ const setupSocket = (server) => {
             socket.join(room);
             console.log(`🟢 User joined room: ${room}`);
         });
-        // Handle message sending
-        socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
-            const chatMessage = new Chat({ senderId, receiverId, message });
-            await chatMessage.save();
 
-            if (users[receiverId]) {
-                io.to(users[receiverId]).emit("receiveMessage", chatMessage);
-            }
-        });
         socket.on("newMesssage", (newMesssage) => {
             console.log("newMesssage", newMesssage);
             var chat = newMesssage.chat;
@@ -40,7 +32,7 @@ const setupSocket = (server) => {
             chat.users.forEach((user) => {
                 if (user == newMesssage.sender._id) return;
                 socket.to(user).emit("messageReceived", newMesssage);
-                console.log("emmited", user);
+                // console.log("emmited", user);
 
             });
         });
@@ -51,15 +43,9 @@ const setupSocket = (server) => {
             console.log("stopTyping", room);
             socket.to(room).emit("stopTyping")
         });
-        // Handle user disconnect
-        socket.on("disconnect", () => {
-            for (const userId in users) {
-                if (users[userId] === socket.id) {
-                    console.log(`🔴 User ${userId} disconnected`);
-                    delete users[userId];
-                    break;
-                }
-            }
+        socket.on("disconnect", (userData) => {
+            console.log("User Disconnected");
+            socket.leave(userData);
         });
     });
 

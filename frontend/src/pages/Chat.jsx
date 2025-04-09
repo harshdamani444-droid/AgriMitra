@@ -480,16 +480,18 @@ const Chat = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        onClick={() => {
-                          setGroupSettings(true);
-                          setSelectedGroup(selectedChat);
-                          setNewGroupName(selectedChat.chatName);
-                        }}
-                      >
-                        <UserRoundCog className="h-6 w-6 text-gray-600" />
-                      </button>
+                      {selectedChat.isGroupChat && (
+                        <button
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          onClick={() => {
+                            setGroupSettings(true);
+                            setSelectedGroup(selectedChat);
+                            setNewGroupName(selectedChat.chatName);
+                          }}
+                        >
+                          <UserRoundCog className="h-6 w-6 text-gray-600" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
