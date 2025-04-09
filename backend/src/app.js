@@ -80,7 +80,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/chatBot", aiChatRoutes);
-app.use("/api/v1/predict", limiter, mlPredictRoutes);
+app.use("/api/v1/predict", mlPredictRoutes);
 app.use("/api/v1/wishlist", Wishlist);
 app.use("/api/v1/ratings", ratings);
 app.use("/api/v1/order", orderRoutes);

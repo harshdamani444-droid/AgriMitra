@@ -2,14 +2,55 @@ import React, { useEffect, useState } from "react";
 import { Package, ShoppingBag, Plus, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const FarmerDashboard = () => {
   useEffect(() => {
     fetchProducts();
+    fetchFarmerDetails();
+    fetchOrders();
   }, []);
 
   const [activeTab, setActiveTab] = useState("products");
   const [products, setProducts] = useState([]);
+  const [farmerDetails, setFarmerDetails] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [status, setStatus] = useState("");
+  async function fetchOrders() {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/v1/order/farmer-orders",
+        {
+          withCredentials: true,
+        }
+      );
+      const data = response.data.data;
+      console.log(data);
+      setOrders(data);
+      setStatus(data.orderStatus);
+      return data;
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      return null;
+    }
+  }
+
+  async function fetchFarmerDetails() {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/v1/user/farmer-dashboard",
+        {
+          withCredentials: true,
+        }
+      );
+      const data = response.data.data;
+      setFarmerDetails(data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching farmer details:", error);
+      return null;
+    }
+  }
   async function fetchProducts() {
     try {
       const response = await axios.get(
@@ -17,6 +58,7 @@ const FarmerDashboard = () => {
       );
       const data = response.data.data;
       setProducts(data);
+
       return data;
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -39,17 +81,29 @@ const FarmerDashboard = () => {
       console.error("Error deleting product:", error);
     }
   };
+  const handleStatusChange = async (e, order) => {
+    const newStatus = e.target.value;
+    setStatus(newStatus);
 
-  const orders = [
-    {
-      id: "ORD001",
-      date: "2024-01-15",
-      customer: "John Doe",
-      amount: 1200,
-      status: "Processing",
-    },
-    // Add more orders
-  ];
+    try {
+      const response = await axios.patch(
+        `http://localhost:4000/api/v1/order/update-order`,
+        {
+          status: newStatus,
+          orderId: order,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      // console.log("Status updated successfully:", response.data);
+      toast.success("Status updated successfully!");
+      fetchOrders(); // Refresh the order list after updating status
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Error updating status. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,7 +125,9 @@ const FarmerDashboard = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Total Products</p>
-                <p className="text-2xl font-bold">{products.length}</p>
+                <p className="text-2xl font-bold">
+                  {farmerDetails?.productsCount}
+                </p>
               </div>
             </div>
           </div>
@@ -82,7 +138,9 @@ const FarmerDashboard = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">156</p>
+                <p className="text-2xl font-bold">
+                  {farmerDetails?.ordersCount}
+                </p>
               </div>
             </div>
           </div>
@@ -93,7 +151,9 @@ const FarmerDashboard = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Pending Delivery</p>
-                <p className="text-2xl font-bold">8</p>
+                <p className="text-2xl font-bold">
+                  {farmerDetails?.pendingDeliveryCount}
+                </p>
               </div>
             </div>
           </div>
@@ -104,7 +164,9 @@ const FarmerDashboard = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Revenue</p>
-                <p className="text-2xl font-bold">₹45,250</p>
+                <p className="text-2xl font-bold">
+                  ₹ {farmerDetails?.totalEarnings}
+                </p>
               </div>
             </div>
           </div>
@@ -247,39 +309,48 @@ const FarmerDashboard = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {orders.map((order) => (
-                    <tr key={order.id}>
+                    <tr key={order._id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {order.id}
+                          {order._id}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {new Date(order.date).toLocaleDateString()}
+                          {new Date(order.createdAt).toLocaleDateString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {order.customer}
+                          {order.consumer.name}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          ₹{order.amount}
+                          ₹{order.totalAmount}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                          {order.status}
+                          {order.orderStatus}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          to={`/farmer/orders/${order.id}`}
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          View Details
-                        </Link>
+                        <div className="flex justify-end gap-3 mt-2">
+                          <select
+                            id={`status-${order._id}`}
+                            value={status}
+                            onChange={(e) => handleStatusChange(e, order._id)}
+                            className="px-2 py-1 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          >
+                            <option disabled>Change Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                          </select>
+                        </div>
                       </td>
                     </tr>
                   ))}

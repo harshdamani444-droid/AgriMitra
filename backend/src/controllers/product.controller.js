@@ -114,17 +114,17 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
   const strringify = JSON.stringify(req.query);
   const cacheKey = `all_products_${strringify}`;
-  const cachedProducts = await redisClient.get(cacheKey);
-  if (cachedProducts) {
-    console.log("Cache hit");
-    return res.status(200).json(
-      new ApiResponse({
-        statusCode: 200,
-        message: "All products from Cache",
-        data: JSON.parse(cachedProducts),
-      })
-    );
-  }
+  // const cachedProducts = await redisClient.get(cacheKey);
+  // if (cachedProducts) {
+  //   console.log("Cache hit");
+  //   return res.status(200).json(
+  //     new ApiResponse({
+  //       statusCode: 200,
+  //       message: "All products from Cache",
+  //       data: JSON.parse(cachedProducts),
+  //     })
+  //   );
+  // }
 
   const resultsPerPage = req.query.pageSize || 8;
   // const products = await Product.find({});
@@ -290,6 +290,7 @@ const deleteProductById = asyncHandler(async (req, res) => {
   const cacheKey = `product_${id}`;
   const keys = await redisClient.keys("all_products_*");
   if (keys.length > 0) {
+    console.log(keys);
     await redisClient.del(keys);
   }
 

@@ -6,6 +6,7 @@ import {
   getOrderByFarmerId,
   getOrderById,
   getOrderByIdForFarmer,
+  updateOrderStatus,
 } from "../controllers/order.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -17,5 +18,6 @@ router.route("/farmer-orders").get(verifyJWT, getOrderByFarmerId);
 router.route("/consumer-orders").get(verifyJWT, getOrderByConsumerId);
 router.route("/get-order-by-id/:id").get(verifyJWT, getOrderById);
 router.route("/get-order-by-id-farmer/:id").get(verifyJWT, getOrderByIdForFarmer);
+router.route("/update-order").patch(verifyJWT, updateOrderStatus);
 
 export default router;

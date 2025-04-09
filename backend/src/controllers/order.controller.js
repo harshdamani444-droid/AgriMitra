@@ -226,6 +226,7 @@ const createOrder = asyncHandler(async (req, res) => {
   }
 });
 
+
 const complteOrder = asyncHandler(async (req, res) => {
   // get user from req
   const user = req.user;
@@ -342,7 +343,7 @@ const getOrderByFarmerId = asyncHandler(async (req, res) => {
       $match: {
         orderStatus: {
           $ne: "Cancelled",
-          $ne: "Pending",
+          // $ne: "Pending",
         },
       },
     },
@@ -758,6 +759,44 @@ const getOrderByIdForFarmer = asyncHandler(async (req, res) => {
   );
 });
 
+const updateOrderStatus = asyncHandler(async (req, res) => {
+  // get user from req
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized", null);
+  }
+
+  // get order id from params
+  const { orderId, status } = req.body;
+
+
+  // get order from database
+  let order = await Order.findById(orderId);
+
+  if (!order) {
+    throw new ApiError(400, "Order not found", null);
+  }
+
+  // check if user is farmer or consumer
+  if (user.role !== "farmer") {
+    throw new ApiError(401, "Unauthorized", null);
+
+  }
+
+  // update order status in database
+  order.orderStatus = status;
+  await order.save();
+
+  return res.status(200).json(
+    new ApiResponse({
+      statusCode: 200,
+      message: "Order status updated",
+      data: order,
+    })
+  );
+});
+
 export {
   createOrder,
   complteOrder,
@@ -765,4 +804,5 @@ export {
   getOrderByFarmerId,
   getOrderById,
   getOrderByIdForFarmer,
+  updateOrderStatus
 };
