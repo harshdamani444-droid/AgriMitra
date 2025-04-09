@@ -29,6 +29,12 @@ import Payment from "./components/Payment";
 import FarmerDashboard from "./pages/FarmerDashboard";
 import NewProduct from "./pages/NewProduct";
 import Chat from "./pages/Chat";
+import MLPrediction from "./pages/MLPrediction";
+import CropYieldPrediction from "./components/CropYieldPrediction";
+import ImagePrediction from "./components/MangoPrediction";
+import MangoPrediction from "./components/MangoPrediction";
+import CottonPrediction from "./components/CottonPrediction";
+import RicePrediction from "./components/RicePrediction";
 
 function App() {
   const dispatch = useDispatch();
@@ -72,6 +78,11 @@ function App() {
             <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
             <Route path="/farmer/products/new" element={<NewProduct />} />
             <Route path="/chats" element={<Chat />} />
+            <Route path="/ml-models" element={<MLPrediction />} />
+            <Route path="/crop-yield" element={<CropYieldPrediction />} />
+            <Route path="/mango-prediction" element={<MangoPrediction />} />
+            <Route path="/cotton-prediction" element={<CottonPrediction />} />
+            <Route path="/rice-prediction" element={<RicePrediction />} />
           </Routes>
         </div>
         <Footer />

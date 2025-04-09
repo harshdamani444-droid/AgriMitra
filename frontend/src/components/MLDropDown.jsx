@@ -7,6 +7,7 @@ import {
   Wheat,
   Archive,
   MessageSquareText,
+  BrainCircuit,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { toast } from "react-toastify";
@@ -31,33 +32,12 @@ function MLDropDown({ isOpen, onClose }) {
       </div>
       <div className="p-1 m-1 border-2 border-gray-200 rounded-lg">
         <Link
-          to="/crop"
+          to="/ml-models"
           onClick={onClose}
           className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
         >
-          <Wheat className="text-green-600 h-5 w-5" />
-          <span>Crop Prediction</span>
-        </Link>
-      </div>
-      <div className="p-1 m-1 border-2 border-gray-200 rounded-lg">
-        <Link
-          to="/fertilizer"
-          onClick={onClose}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
-        >
-          <Archive size={35} className="text-green-600 h-5 w-5" />
-          <span>Fertilizer Prediction</span>
-        </Link>
-      </div>
-      <div className="p-1 m-1 border-2 border-gray-200 rounded-lg">
-        <Link
-          to="/fertility"
-          onClick={onClose}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
-        >
-          <YardIcon fontSize="medium" className="text-green-600" />
-
-          <span>Soil Fertility Prediction </span>
+          <BrainCircuit className="text-green-600 h-5 w-5" />
+          <span>ML Models</span>
         </Link>
       </div>
     </div>
