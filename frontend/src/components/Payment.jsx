@@ -72,7 +72,7 @@ function Payment({ shippingInfo }) {
                 orderData.details?.[0]?.description || JSON.stringify(orderData)
               );
             } catch (error) {
-              console.error(error);
+              // console.error(error);
               setMessage(
                 `Could not initiate PayPal Checkout: ${error.message}`
               );
@@ -98,7 +98,7 @@ function Payment({ shippingInfo }) {
               navigate("/order-success");
               setMessageType("success");
             } catch (error) {
-              console.error(error);
+              // console.error(error);
               setMessage(`Transaction failed: ${error.message}`);
               setMessageType("error");
             }

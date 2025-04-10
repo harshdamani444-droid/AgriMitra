@@ -19,7 +19,7 @@ const Weather = () => {
           fetchWeather(latitude, longitude);
         },
         (err) => {
-          console.error("Geolocation error:", err);
+          // console.error("Geolocation error:", err);
           setError("Location access denied. Using default location (Delhi).");
           fetchWeather(28.6139, 77.209); // Default to Delhi
         }
@@ -49,7 +49,7 @@ const Weather = () => {
 
       setForecastData(dailyForecast.slice(0, 5));
     } catch (error) {
-      console.error("Error fetching weather data:", error);
+      // console.error("Error fetching weather data:", error);
     }
   };
 

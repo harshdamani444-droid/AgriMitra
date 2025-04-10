@@ -29,7 +29,7 @@ const SignUp = () => {
     // console.log(formDataToSend);
     const resultAction = await dispatch(signupUser(formDataToSend));
     if (signupUser.fulfilled.match(resultAction)) {
-      console.log("User sign up successful");
+      // console.log("User sign up successful");
       toast.success("Sign up successful");
       navigate("/");
     } else {

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api/v1';
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 
 export const loginUser = createAsyncThunk(
@@ -21,7 +21,7 @@ export const signupUser = createAsyncThunk(
     'auth/signupUser',
     async (userData, thunkAPI) => {
         try {
-            console.log(userData);
+            // console.log(userData);
             const response = await axios.post(`${API_URL}/user/register`, userData, {
                 withCredentials: true
             });
@@ -56,7 +56,7 @@ export const completeProfile = createAsyncThunk(
     '/user/complete-profile',
     async (userData, thunkAPI) => {
         try {
-            console.log(userData);
+            // console.log(userData);
             const response = await axios.patch(
                 `${API_URL}/user/complete-profile`,
                 userData,
@@ -95,7 +95,7 @@ export const getUser = createAsyncThunk(
 
                 try {
                     const resp = await refreshAccessToken();
-                    console.log("Token refreshed successfully:", resp);
+                    // console.log("Token refreshed successfully:", resp);
                     const retryResponse = await axios.get(`${API_URL}/user/current-user`, {
                         withCredentials: true,
                     });
@@ -116,7 +116,7 @@ export const getUser = createAsyncThunk(
 export const forgetPassword = createAsyncThunk(
     '/user/forget-password',
     async (email, thunkAPI) => {
-        console.log(email);
+        // console.log(email);
         try {
             const response = await axios.post(
                 `${API_URL}/user/forgot-password`,

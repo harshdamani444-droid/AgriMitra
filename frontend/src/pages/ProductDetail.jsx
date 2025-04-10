@@ -41,10 +41,10 @@ const ProductDetail = () => {
         setReview(response.data.data.ratings);
         setRating(response.data.data.averageRating);
       } else {
-        console.error("Failed to fetch ratings:", response.statusText);
+        // console.error("Failed to fetch ratings:", response.statusText);
       }
     } catch (error) {
-      console.error("Error fetching ratings:", error);
+      // console.error("Error fetching ratings:", error);
       return null;
     }
   }

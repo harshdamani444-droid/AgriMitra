@@ -38,7 +38,7 @@ function CottonPrediction() {
       );
       setPrediction(res.data.data); // Adjust according to your API response
     } catch (error) {
-      console.error("Prediction Error:", error);
+      // console.error("Prediction Error:", error);
       setPrediction("Error during prediction.");
     } finally {
       setLoading(false);

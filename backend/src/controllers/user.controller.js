@@ -168,7 +168,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
   const decoded = jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET);
 
-  console.log(decoded);
+  // console.log(decoded);
   const user = await User.findOne({ _id: decoded._id });
 
   if (!user) {
@@ -512,10 +512,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   }
 
   // update password
-  console.log(req.body);
+  // console.log(req.body);
   const { password, confirmPassword } = req?.body;
-  console.log(password);
-  console.log(confirmPassword);
+  // console.log(password);
+  // console.log(confirmPassword);
   if (!password && !confirmPassword) {
     throw new ApiError(400, "Password and passwordConfirm are required");
   }
@@ -659,7 +659,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
     ]
 
   } : {};
-  console.log(keywords)
+  // console.log(keywords)
   const users = await User.find(keywords).find({ _id: { $ne: req.user._id } });
 
   return res.status(200).json(

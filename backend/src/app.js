@@ -20,7 +20,7 @@ const app = express();
 
 // CORS options on the backend
 const corsOptions = {
-  origin: 'http://localhost:5173',  // Match the frontend origin
+  origin: `${process.env.FRONTEND_URL}:${process.env.FRONTEND_PORT}`,  // Match the frontend origin
   credentials: true,                // Allow sending cookies
 };
 app.use(cors(corsOptions));
@@ -80,7 +80,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/chatBot", aiChatRoutes);
-app.use("/api/v1/predict", mlPredictRoutes);
+app.use("/api/v1/predict", limiter, mlPredictRoutes);
 app.use("/api/v1/wishlist", Wishlist);
 app.use("/api/v1/ratings", ratings);
 app.use("/api/v1/order", orderRoutes);

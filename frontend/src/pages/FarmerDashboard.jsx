@@ -3,19 +3,18 @@ import { Package, ShoppingBag, Plus, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {useSelector} from "react-redux";
+import { useSelector } from "react-redux";
 
 const FarmerDashboard = () => {
   useEffect(() => {
     fetchFarmerDetails();
     fetchOrders();
   }, []);
-  
+
   const farmerId = useSelector((state) => state?.auth?.user?._id);
   useEffect(() => {
-    if(farmerId) 
-      fetchProducts();
-  }, [farmerId])
+    if (farmerId) fetchProducts();
+  }, [farmerId]);
 
   const [activeTab, setActiveTab] = useState("products");
   const [products, setProducts] = useState([]);
@@ -25,18 +24,18 @@ const FarmerDashboard = () => {
   async function fetchOrders() {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/v1/order/farmer-orders",
+        `${import.meta.env.VITE_BACKEND_URL}/order/farmer-orders`,
         {
           withCredentials: true,
         }
       );
       const data = response.data.data;
-      console.log(data);
+      // console.log(data);
       setOrders(data);
       setStatus(data.orderStatus);
       return data;
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      // console.error("Error fetching orders:", error);
       return null;
     }
   }
@@ -44,7 +43,7 @@ const FarmerDashboard = () => {
   async function fetchFarmerDetails() {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/v1/user/farmer-dashboard",
+        `${import.meta.env.VITE_BACKEND_URL}/user/farmer-dashboard`,
         {
           withCredentials: true,
         }
@@ -53,30 +52,34 @@ const FarmerDashboard = () => {
       setFarmerDetails(data);
       return data;
     } catch (error) {
-      console.error("Error fetching farmer details:", error);
+      // console.error("Error fetching farmer details:", error);
       return null;
     }
   }
   async function fetchProducts() {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/v1/product/get-product-by-farmer/${farmerId}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/product/get-product-by-farmer/${farmerId}`
       );
       const data = response.data.data;
-      console.log(data);
+      // console.log(data);
       setProducts(data);
 
       return data;
     } catch (error) {
-      console.error("Error fetching products:", error);
+      // console.error("Error fetching products:", error);
       return [];
     }
   }
   const handleDeleteProduct = async (productId) => {
     try {
-      console.log(productId);
+      // console.log(productId);
       const response = await axios.delete(
-        `http://localhost:4000/api/v1/product/delete-product-by-id/${productId}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/product/delete-product-by-id/${productId}`,
         {
           withCredentials: true,
         }
@@ -85,7 +88,7 @@ const FarmerDashboard = () => {
         fetchProducts(); // Refresh the product list after deletion
       }
     } catch (error) {
-      console.error("Error deleting product:", error);
+      // console.error("Error deleting product:", error);
     }
   };
   const handleStatusChange = async (e, order) => {
@@ -94,7 +97,7 @@ const FarmerDashboard = () => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/v1/order/update-order`,
+        `${import.meta.env.VITE_BACKEND_URL}/order/update-order`,
         {
           status: newStatus,
           orderId: order,
@@ -107,7 +110,7 @@ const FarmerDashboard = () => {
       toast.success("Status updated successfully!");
       fetchOrders(); // Refresh the order list after updating status
     } catch (error) {
-      console.error("Error updating status:", error);
+      // console.error("Error updating status:", error);
       toast.error("Error updating status. Please try again.");
     }
   };

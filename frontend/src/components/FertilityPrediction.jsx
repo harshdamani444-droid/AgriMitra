@@ -99,7 +99,7 @@ function FertilityPrediction() {
       })
       .then((res) => res.data);
 
-    console.log(response);
+    // console.log(response);
     setFertility(response.data.fertility + 1);
   };
 

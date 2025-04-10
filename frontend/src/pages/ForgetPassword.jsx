@@ -19,7 +19,7 @@ const ForgotPassword = () => {
     } else {
       toast.error("Failed to send reset link");
     }
-    console.log("Reset link sent to", email);
+    // console.log("Reset link sent to", email);
   };
 
   return (

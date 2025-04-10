@@ -65,7 +65,7 @@ function CropPrediction() {
       })
       .then((res) => res.data);
 
-    console.log(response);
+    // console.log(response);
     setRecommandedCrop(response.data.recommended_crop);
   };
 
