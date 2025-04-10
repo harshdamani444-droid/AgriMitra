@@ -1,22 +1,23 @@
+import dotenv from "dotenv";
+dotenv.config({ path: "../.env" });
+
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 import path from "path";
-import { generateInvoice } from "../utils/generateInvoice.js";
-import { sendMail } from "../utils/sendMail.js";
-import dotenv from "dotenv";
-dotenv.config({ path: "../../.env" });
+import { generateInvoice } from "./generateInvoice.js";
+import { sendMail } from "./sendMail.js"
 import fs from "fs";
 
-// Create a **new Redis instance** for BullMQ Worker
-// console.log("Redis Host:", process.env.REDIS_HOST);
+
 const bullRedisConnection = new Redis({
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
     password: process.env.REDIS_PASSWORD,
     maxRetriesPerRequest: null,
 
-
 });
+// console.log(process.cwd())
+
 
 // Create the worker
 const worker = new Worker(
