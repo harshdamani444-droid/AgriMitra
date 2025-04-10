@@ -524,10 +524,17 @@ const getOrderByFarmerId = asyncHandler(async (req, res) => {
     return order;
   });
 
+    // filter out orders with no products
+    orders = orders.map(order => {
+      order.orderItems = order.orderItems.filter(item => item.productDetails);
+      return order;
+    })
+
   orders?.map((order) => {
     order.totalAmount = order?.orderItems?.reduce((acc, item) => {
       return acc + item.productDetails?.price * item?.quantity;
     }, 0);
+
 
     order.orderItems = undefined;
   });
