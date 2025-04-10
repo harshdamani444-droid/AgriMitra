@@ -25,19 +25,18 @@ import ChatBot from "./pages/ChatBot";
 import FertilityPrediction from "./components/FertilityPrediction";
 import CropPrediction from "./components/CropPrediction";
 import FertilizerPrediction from "./components/FertilizerPrediction";
-import Payment from "./components/Payment";
 import FarmerDashboard from "./pages/FarmerDashboard";
 import NewProduct from "./pages/NewProduct";
 import Chat from "./pages/Chat";
 import MLPrediction from "./pages/MLPrediction";
 import CropYieldPrediction from "./components/CropYieldPrediction";
-import ImagePrediction from "./components/MangoPrediction";
 import MangoPrediction from "./components/MangoPrediction";
 import CottonPrediction from "./components/CottonPrediction";
 import RicePrediction from "./components/RicePrediction";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   const dispatch = useDispatch();
@@ -48,8 +47,8 @@ function App() {
   return (
     <Router>
       <ToastContainer
-        position="top-right" // Change position if needed
-        autoClose={1000} // Close after 3 seconds
+        position="top-right"
+        autoClose={1000}
         hideProgressBar={false}
         newestOnTop={true}
         closeOnClick
@@ -68,27 +67,133 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:id" element={<ResetPassword />} />
             <Route path="/complete-profile" element={<CompleteProfile />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="*" element={<Error />} />
-            <Route path="/chat" element={<ChatBot />} />
-            <Route path="/fertility" element={<FertilityPrediction />} />
-            <Route path="/crop" element={<CropPrediction />} />
-            <Route path="/fertilizer" element={<FertilizerPrediction />} />
-            <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-            <Route path="/farmer/products/new" element={<NewProduct />} />
-            <Route path="/chats" element={<Chat />} />
-            <Route path="/ml-models" element={<MLPrediction />} />
-            <Route path="/crop-yield" element={<CropYieldPrediction />} />
-            <Route path="/mango-prediction" element={<MangoPrediction />} />
-            <Route path="/cotton-prediction" element={<CottonPrediction />} />
-            <Route path="/rice-prediction" element={<RicePrediction />} />
+            <Route path="/reset-password/:id" element={<ResetPassword />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="*" element={<Error />} />
+
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <ChatBot />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/fertility"
+              element={
+                <ProtectedRoute>
+                  <FertilityPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crop"
+              element={
+                <ProtectedRoute>
+                  <CropPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/fertilizer"
+              element={
+                <ProtectedRoute>
+                  <FertilizerPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/dashboard"
+              element={
+                <ProtectedRoute>
+                  <FarmerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/products/new"
+              element={
+                <ProtectedRoute>
+                  <NewProduct />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chats"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ml-models"
+              element={
+                <ProtectedRoute>
+                  <MLPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crop-yield"
+              element={
+                <ProtectedRoute>
+                  <CropYieldPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mango-prediction"
+              element={
+                <ProtectedRoute>
+                  <MangoPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cotton-prediction"
+              element={
+                <ProtectedRoute>
+                  <CottonPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rice-prediction"
+              element={
+                <ProtectedRoute>
+                  <RicePrediction />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </div>
         <Footer />
