@@ -612,6 +612,12 @@ const getFarmerDashboardDetails = asyncHandler(async (req, res) => {
     return order;
   });
 
+  // filter out orders with no products
+  orders = orders.map(order => {
+    order.orderItems = order.orderItems.filter(item => item.productDetails);
+    return order;
+  })
+
   const ordersCount = orders?.length || 0;
 
   let pendingDeliveryCount = 0;
