@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Leaf, CheckCircle, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Message({ content, type }) {
   return (
@@ -40,6 +41,7 @@ function Payment({ shippingInfo }) {
     pincode: "90001",
     phone: "1234567890",
   };
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-xl border border-green-300">
@@ -93,9 +95,7 @@ function Payment({ shippingInfo }) {
                 return actions.restart();
               if (orderData.details?.[0])
                 throw new Error(orderData.details[0].description);
-              setMessage(
-                `Transaction successful: ${orderData.purchase_units[0].payments.captures[0].id}`
-              );
+              navigate("/order-success");
               setMessageType("success");
             } catch (error) {
               console.error(error);

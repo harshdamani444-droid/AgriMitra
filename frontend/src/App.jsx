@@ -37,6 +37,7 @@ import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OrderConfirmation from "./components/OrderConformation";
 
 function App() {
   const dispatch = useDispatch();
@@ -191,6 +192,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RicePrediction />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/order-success"
+              element={
+                <ProtectedRoute>
+                  <OrderConfirmation />
                 </ProtectedRoute>
               }
             />

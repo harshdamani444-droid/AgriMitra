@@ -14,6 +14,7 @@ import {
 } from "@paypal/paypal-server-sdk";
 import axios from "axios";
 import mongoose, { mongo } from "mongoose";
+import { invoiceQueue } from "../jobs/invoiceQueue.js";
 
 const createOrder = asyncHandler(async (req, res) => {
   // get user from req
@@ -169,7 +170,7 @@ const createOrder = asyncHandler(async (req, res) => {
       },
     },
   });
-
+  console.log("perfect");
   const ordersController = new OrdersController(client);
   const apires = await axios.get(
     `http://anyapi.io/api/v1/exchange/convert?base=INR&to=USD&amount=${totalPrice}&apiKey=fb6tiqd9fjds6n92c50gefgam95aq8gn7rqh8mu73gqlc8sfkvq4o`
@@ -314,6 +315,16 @@ const complteOrder = asyncHandler(async (req, res) => {
     }));
     await order.save();
 
+    const OrderToBeSent = await getOrderByIdFunction(order._id);
+    console.log(OrderToBeSent);
+    await invoiceQueue.add('send-invoice', {
+      order: OrderToBeSent,
+      user: {
+        email: user.email,
+        name: user.name,
+      },
+    });
+
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     order.orderStatus = "Cancelled";
@@ -323,6 +334,98 @@ const complteOrder = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Failed to capture order." });
   }
 });
+const getOrderByIdFunction = async (id) => {
+  try {
+    let order = await Order.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id),
+
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "products",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                localField: "farmer",
+                foreignField: "_id",
+                as: "farmer",
+                pipeline: [
+                  {
+                    $project: {
+                      name: 1,
+                      email: 1,
+                      avatar: 1,
+                      phone: 1,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $unwind: "$farmer",
+            },
+            {
+              $project: {
+                category: 1,
+                farmName: 1,
+                farmer: 1,
+                price: 1,
+                unitOfSize: 1,
+                size: 1,
+                images: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          createdAt: 1,
+          updatedAt: 1,
+          orderStatus: 1,
+          orderItems: 1,
+          deliveryInfo: 1,
+          products: 1,
+          shippingPrice: 1,
+        },
+      },
+    ]);
+
+    order = order[0];
+
+    if (!order) {
+      throw new ApiError(400, "Order not found", null);
+    }
+
+    // map products and orderItems to get product details
+    order?.orderItems?.forEach((item) => {
+      order?.products?.forEach((product) => {
+        if (item?.product?.toString() === product?._id?.toString()) {
+          item.productDetails = product;
+        }
+      });
+    });
+    order.products = undefined;
+
+    order.totalAmount = order?.orderItems?.reduce((acc, item) => {
+      return acc + item.productDetails?.price * item?.quantity;
+    }, 0);
+
+    return order;
+  }
+  catch (error) {
+    console.error("Failed to get order by id:", error);
+    throw new ApiError(500, "Failed to get order by id", null);
+
+  }
+}
 
 const getOrderByFarmerId = asyncHandler(async (req, res) => {
   // get user from req
@@ -556,13 +659,12 @@ const getOrderById = asyncHandler(async (req, res) => {
 
   // get order id from params
   const { id } = req.params;
-
   // get order from database
   let order = await Order.aggregate([
     {
       $match: {
         _id: new mongoose.Types.ObjectId(id),
-        consumer: user._id,
+
       },
     },
     {
