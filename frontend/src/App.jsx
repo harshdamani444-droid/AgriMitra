@@ -35,6 +35,9 @@ import ImagePrediction from "./components/MangoPrediction";
 import MangoPrediction from "./components/MangoPrediction";
 import CottonPrediction from "./components/CottonPrediction";
 import RicePrediction from "./components/RicePrediction";
+import AboutUs from "./pages/AboutUs";
+import ContactUs from "./pages/ContactUs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
   const dispatch = useDispatch();
@@ -83,6 +86,9 @@ function App() {
             <Route path="/mango-prediction" element={<MangoPrediction />} />
             <Route path="/cotton-prediction" element={<CottonPrediction />} />
             <Route path="/rice-prediction" element={<RicePrediction />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
           </Routes>
         </div>
         <Footer />

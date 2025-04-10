@@ -21,15 +21,15 @@ const Footer = () => {
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Phone className="h-5 w-5" />
-                <span>+91 1234567890</span>
+                <span>+91 98765 43210</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-5 w-5" />
-                <span>contact@agrimitra.com</span>
+                <span>agrimitraofficial@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-5 w-5" />
-                <span>123 Farmer's Market, Agriculture Zone</span>
+                <span>Rural Agro Road, Anand, Gujarat, India</span>
               </div>
             </div>
           </div>
@@ -41,11 +41,7 @@ const Footer = () => {
                   About Us
                 </a>
               </li>
-              <li>
-                <a href="/services" className="hover:text-green-200">
-                  Services
-                </a>
-              </li>
+
               <li>
                 <a href="/contact" className="hover:text-green-200">
                   Contact

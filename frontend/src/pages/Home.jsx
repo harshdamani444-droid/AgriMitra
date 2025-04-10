@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ArrowRight,
   Leaf,
@@ -9,15 +9,31 @@ import {
   Sprout,
   Award,
   Phone,
+  Wheat,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { getCartProducts } from "../redux/slices/Cart/GetCart";
+import axios from "axios";
 
 const Home = () => {
   const dispatch = useDispatch();
+  const [products, setProducts] = useState([]);
   useEffect(() => {
     dispatch(getCartProducts());
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/product/get-all-product`
+        );
+        // Pick the first 8 products from the response
+        setProducts(response.data.data.products.slice(0, 8));
+      } catch (error) {
+        // console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
   }, [dispatch]);
   return (
     <div className="flex flex-col">
@@ -62,7 +78,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="text-center">
               <h3 className="text-4xl font-bold mb-2">10K+</h3>
-              <p>Farmers Served</p>
+              <p>Active Users</p>
             </div>
             <div className="text-center">
               <h3 className="text-4xl font-bold mb-2">500+</h3>
@@ -108,33 +124,74 @@ const Home = () => {
           </div>
         </div>
       </div>
-
-      <div className="py-16">
+      <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
-            Featured Products
+            AI-Powered Tools for Farmers
           </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* AI Assistant Section */}
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+              <Sprout className="h-12 w-12 text-green-600 mb-4" />
+              <h3 className="text-xl font-bold mb-2">AI Assistant Chatbot</h3>
+              <p className="text-gray-600">
+                Get personalized advice and support from our AI-powered chatbot,
+                designed to assist farmers with their queries and provide
+                real-time solutions.
+              </p>
+              <Link
+                to="/chat"
+                className="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Chat Now
+              </Link>
+            </div>
+
+            {/* ML Models Section */}
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+              <Wheat className="h-12 w-12 text-green-600 mb-4" />
+              <h3 className="text-xl font-bold mb-2">7 ML Models</h3>
+              <p className="text-gray-600">
+                Explore our machine learning models for fertilizer prediction,
+                crop yield estimation, disease detection, and more.
+              </p>
+              <Link
+                to="/ml-models"
+                className="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Explore Models
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center">Featured Products</h2>
+          <p className="text-center text-gray-600 mb-8">
+            For Exploring our wide range of products, click{" "}
+            <Link to="/shop" className="text-green-600 font-bold">
+              here
+            </Link>
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((item) => (
+            {products.map((product) => (
               <div
-                key={item}
+                key={product._id}
                 className="bg-white rounded-lg shadow-md overflow-hidden group hover:shadow-xl transition-shadow"
               >
                 <img
-                  src={`https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&q=80`}
-                  alt="Product"
+                  src={product.images[0]} // Use the first image from the product
+                  alt={product.category}
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
                 />
                 <div className="p-4">
-                  <h3 className="font-bold mb-2">Organic Seeds</h3>
-                  <p className="text-gray-600 mb-2">
-                    High-quality organic seeds for better yield
-                  </p>
+                  <h3 className="font-bold mb-2">{product.category}</h3>
+                  <p className="text-gray-600 mb-2">{product.description}</p>
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-green-600">₹299</span>
-                    <button className="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors">
-                      <ShoppingBag className="h-5 w-5" />
-                    </button>
+                    <span className="font-bold text-green-600">
+                      ₹{product.price} / {product.size} {product.unitOfSize}
+                    </span>
                   </div>
                 </div>
               </div>
