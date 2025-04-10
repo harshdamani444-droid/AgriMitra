@@ -3,13 +3,19 @@ import { Package, ShoppingBag, Plus, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import {useSelector} from "react-redux";
 
 const FarmerDashboard = () => {
   useEffect(() => {
-    fetchProducts();
     fetchFarmerDetails();
     fetchOrders();
   }, []);
+  
+  const farmerId = useSelector((state) => state?.auth?.user?._id);
+  useEffect(() => {
+    if(farmerId) 
+      fetchProducts();
+  }, [farmerId])
 
   const [activeTab, setActiveTab] = useState("products");
   const [products, setProducts] = useState([]);
@@ -54,9 +60,10 @@ const FarmerDashboard = () => {
   async function fetchProducts() {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/v1/product/get-product-by-farmer/67e9a512b89c0b6209ac425b"
+        `http://localhost:4000/api/v1/product/get-product-by-farmer/${farmerId}`,
       );
       const data = response.data.data;
+      console.log(data);
       setProducts(data);
 
       return data;
