@@ -30,14 +30,14 @@ const Login = () => {
     const token = credentialResponse.credential;
 
     if (!token) {
-      console.error("No token received");
+      // console.error("No token received");
       return;
     }
 
     try {
       const response = await axios
         .post(
-          "http://localhost:4000/api/v1/user/googleVerify",
+          `${import.meta.env.VITE_BACKEND_URL}/user/googleVerify`,
           { token },
           { withCredentials: true }
         )
@@ -45,12 +45,12 @@ const Login = () => {
       dispatch(setUser(response.data));
       navaigate("/complete-profile");
     } catch (error) {
-      console.error("Error verifying token:", error);
+      // console.error("Error verifying token:", error);
     }
   };
 
   const handleLoginFailure = () => {
-    console.error("Login failed");
+    // console.error("Login failed");
   };
 
   return (

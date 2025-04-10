@@ -8,7 +8,7 @@ export const getProducts = createAsyncThunk(
 
         let url = ``;
         if (search !== "") {
-            console.log("search", search);
+            // console.log("search", search);
             url += `?search=${search}`;
         }
         if (category !== "") {
@@ -30,7 +30,7 @@ export const getProducts = createAsyncThunk(
             }
         }
         if (minPrice !== "") {
-            console.log("minPrice", minPrice);
+            // console.log("minPrice", minPrice);
             if (url === "") {
                 url += `?price[gte]=${minPrice}`;
             } else {
@@ -38,7 +38,7 @@ export const getProducts = createAsyncThunk(
             }
         }
         if (maxPrice !== "") {
-            console.log("maxPrice", maxPrice);
+            // console.log("maxPrice", maxPrice);
             if (url === "") {
                 url += `?price[lte]=${maxPrice}`;
             } else {

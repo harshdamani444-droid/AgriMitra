@@ -4,29 +4,29 @@ const users = {}; // Store user socket IDs
 const setupSocket = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: "http://localhost:5173", // Allow frontend access
+            origin: `${process.env.FRONTEND_URL}:${process.env.FRONTEND_PORT}`, // Allow frontend access
             methods: ["GET", "POST"],
         },
         pingTimeout: 60000,
     });
 
     io.on("connection", (socket) => {
-        console.log(`⚡ User Connected:`);
+        // console.log(`⚡ User Connected:`);
 
         // Store user socket ID
         socket.on("setup", (userData) => {
             socket.join(userData);
             socket.emit("connected");
-            console.log(`🟢 User ${userData} connected `);
+            // console.log(`🟢 User ${userData} connected `);
         });
 
         socket.on("joinChat", (room) => {
             socket.join(room);
-            console.log(`🟢 User joined room: ${room}`);
+            // console.log(`🟢 User joined room: ${room}`);
         });
 
         socket.on("newMesssage", (newMesssage) => {
-            console.log("newMesssage", newMesssage);
+            // console.log("newMesssage", newMesssage);
             var chat = newMesssage.chat;
             if (!chat.users) return;
             chat.users.forEach((user) => {
@@ -40,11 +40,11 @@ const setupSocket = (server) => {
             socket.to(room).emit("typing");
         });
         socket.on("stopTyping", (room) => {
-            console.log("stopTyping", room);
+            // console.log("stopTyping", room);
             socket.to(room).emit("stopTyping")
         });
         socket.on("disconnect", (userData) => {
-            console.log("User Disconnected");
+            // console.log("User Disconnected");
             socket.leave(userData);
         });
     });

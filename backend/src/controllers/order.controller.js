@@ -170,7 +170,7 @@ const createOrder = asyncHandler(async (req, res) => {
       },
     },
   });
-  console.log("perfect");
+  // console.log("perfect");
   const ordersController = new OrdersController(client);
   const apires = await axios.get(
     `http://anyapi.io/api/v1/exchange/convert?base=INR&to=USD&amount=${totalPrice}&apiKey=fb6tiqd9fjds6n92c50gefgam95aq8gn7rqh8mu73gqlc8sfkvq4o`
@@ -222,7 +222,7 @@ const createOrder = asyncHandler(async (req, res) => {
     jsonResponse.totalPrice = totalPrice; // add total price to response
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
-    console.error("Failed to create order:", error);
+    // console.error("Failed to create order:", error);
     res.status(500).json({ error: "Failed to create order." });
   }
 });
@@ -316,7 +316,7 @@ const complteOrder = asyncHandler(async (req, res) => {
     await order.save();
 
     const OrderToBeSent = await getOrderByIdFunction(order._id);
-    console.log(OrderToBeSent);
+    // console.log(OrderToBeSent);
     await invoiceQueue.add('send-invoice', {
       order: OrderToBeSent,
       user: {
@@ -329,8 +329,8 @@ const complteOrder = asyncHandler(async (req, res) => {
   } catch (error) {
     order.orderStatus = "Cancelled";
     await order.save();
-    console.error("Failed to capture order:", error);
-    console.error("Failed to create order:", error);
+    // console.error("Failed to capture order:", error);
+    // console.error("Failed to create order:", error);
     res.status(500).json({ error: "Failed to capture order." });
   }
 });
@@ -421,7 +421,7 @@ const getOrderByIdFunction = async (id) => {
     return order;
   }
   catch (error) {
-    console.error("Failed to get order by id:", error);
+    // console.error("Failed to get order by id:", error);
     throw new ApiError(500, "Failed to get order by id", null);
 
   }
@@ -524,11 +524,11 @@ const getOrderByFarmerId = asyncHandler(async (req, res) => {
     return order;
   });
 
-    // filter out orders with no products
-    orders = orders.map(order => {
-      order.orderItems = order.orderItems.filter(item => item.productDetails);
-      return order;
-    })
+  // filter out orders with no products
+  orders = orders.map(order => {
+    order.orderItems = order.orderItems.filter(item => item.productDetails);
+    return order;
+  })
 
   orders?.map((order) => {
     order.totalAmount = order?.orderItems?.reduce((acc, item) => {

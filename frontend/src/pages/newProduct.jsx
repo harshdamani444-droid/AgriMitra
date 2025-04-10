@@ -70,7 +70,7 @@ const NewProduct = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:4000/api/v1/product/create-product",
+        `${import.meta.env.VITE_BACKEND_URL}/product/create-product`,
         formDataToSend,
         {
           headers: {
@@ -81,15 +81,15 @@ const NewProduct = () => {
       );
 
       if (response.status === 201) {
-        console.log("Product created successfully", response.data);
+        // console.log("Product created successfully", response.data);
         toast.success("Product created successfully!");
         navigate("/farmer/dashboard");
       }
     } catch (error) {
-      console.error(
-        "Error creating product:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error creating product:",
+      //   error.response?.data || error.message
+      // );
     } finally {
       setLoading(false);
     }

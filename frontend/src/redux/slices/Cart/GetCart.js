@@ -44,7 +44,7 @@ export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async (productId, thunkAPI) => {
     try {
-      console.log(productId);
+      // console.log(productId);
       await axios.delete(`${API_URL}/cart/remove-from-cart`, {
         data: { productId },
         withCredentials: true,

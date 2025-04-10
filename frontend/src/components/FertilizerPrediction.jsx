@@ -114,7 +114,7 @@ function FertilizerPrediction() {
         .then((res) => res.data);
       setRecommendedFertilizer(response.data.recommended_fertilizer);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 

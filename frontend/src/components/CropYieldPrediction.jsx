@@ -62,7 +62,7 @@ function CropYieldPrediction() {
 
       setPredictedYield(res.data.data.predicted_yield_tons_per_hectare);
     } catch (error) {
-      console.error("Prediction failed", error);
+      // console.error("Prediction failed", error);
     }
   };
 

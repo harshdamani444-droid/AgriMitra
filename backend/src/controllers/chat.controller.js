@@ -157,8 +157,7 @@ const addToGroup = asyncHandler(async (req, res) => {
             success: false,
         }));
     }
-    console.log(userId)
-    console.log(chat);
+
     const alreadyExists = chat.users.find((u) => u._id.toString() === userId);
 
     if (alreadyExists) {

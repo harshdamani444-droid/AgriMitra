@@ -290,7 +290,7 @@ const deleteProductById = asyncHandler(async (req, res) => {
   const cacheKey = `product_${id}`;
   const keys = await redisClient.keys("all_products_*");
   if (keys.length > 0) {
-    console.log(keys);
+    // console.log(keys);
     await redisClient.del(keys);
   }
 

@@ -5,6 +5,7 @@ import axios from "axios";
 import fs from "fs";
 import FormData from "form-data";
 import path from "path";
+const API_URL = process.env.PYTHON_API_URL;
 
 const predictSoilFertily = async (req, res) => {
     const requiredFields = ["N", "P", "K", "ph", "ec", "oc", "S", "zn", "fe", "cu", "Mn", "B"];
@@ -20,7 +21,7 @@ const predictSoilFertily = async (req, res) => {
     const featureArray = requiredFields.map(field => Number(req.body[field]));
 
     try {
-        const response = await axios.post("http://localhost:5000/predict/soil", {
+        const response = await axios.post(`${API_URL}/predict/soil`, {
             features: featureArray
         });
         return res.status(200).json(new ApiResponse({
@@ -47,7 +48,7 @@ const predictCrop = async (req, res) => {
     const featureArray = requiredFields.map(field => Number(req.body[field]));
 
     try {
-        const response = await axios.post("http://localhost:5000/predict/crop", {
+        const response = await axios.post(`${API_URL}/predict/crop`, {
             features: featureArray
         });
         return res.status(200).json(new ApiResponse({
@@ -91,7 +92,7 @@ const predictFertilizer = async (req, res) => {
     ];
 
     try {
-        const response = await axios.post("http://localhost:5000/predict/fertilizer", {
+        const response = await axios.post(`${API_URL}/predict/fertilizer`, {
             features: featureArray
         });
         return res.status(200).json(new ApiResponse({
@@ -114,12 +115,12 @@ const predictMango = async (req, res) => {
     const form = new FormData();
     form.append('image', fs.createReadStream(image));
     try {
-        const response = await axios.post('http://localhost:5000/predict/mango', form, {
+        const response = await axios.post(`${API_URL}/predict/mango`, form, {
             headers: form.getHeaders(),
         });
 
         fs.unlink(image, (err) => {
-            if (err) console.error(`Failed to delete image: ${image}`, err);
+            throw new ApiError(500, "Image deletion failed", err);
         });
 
         return res.status(200).json(new ApiResponse({
@@ -131,7 +132,7 @@ const predictMango = async (req, res) => {
 
     } catch (error) {
         fs.unlink(image, (err) => {
-            if (err) console.error(`Failed to delete image: ${image}`, err);
+
         });
         throw new ApiError(500, "Token generation failed", error);
 
@@ -154,7 +155,7 @@ const predictRice = asyncHandler(async (req, res) => {
         formData.append('image', fs.createReadStream(imageLocalPath));
 
         // Send FormData with proper headers to Flask API
-        const response = await axios.post("http://localhost:5000/predict/rice", formData, {
+        const response = await axios.post(`${API_URL}/predict/rice`, formData, {
             headers: {
                 ...formData.getHeaders()
             },
@@ -164,7 +165,7 @@ const predictRice = asyncHandler(async (req, res) => {
 
         // Delete the temporary image after prediction
         fs.unlink(imageLocalPath, (err) => {
-            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+            // if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
         });
 
         return res.status(200).json(new ApiResponse({
@@ -175,7 +176,7 @@ const predictRice = asyncHandler(async (req, res) => {
     } catch (error) {
         // Make sure to delete the image even if the prediction fails
         fs.unlink(imageLocalPath, (err) => {
-            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+            // if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
         });
         throw new ApiError(500, "Rice prediction failed", error);
     }
@@ -196,7 +197,7 @@ const predictCottonLeafDisease = asyncHandler(async (req, res) => {
         formData.append('image', fs.createReadStream(imageLocalPath));
 
         // Send FormData with proper headers to Flask API
-        const response = await axios.post("http://localhost:5000/predict/cotton", formData, {
+        const response = await axios.post(`${API_URL}/predict/cotton`, formData, {
             headers: {
                 ...formData.getHeaders()
             },
@@ -206,7 +207,7 @@ const predictCottonLeafDisease = asyncHandler(async (req, res) => {
 
         // Delete the temporary image after prediction
         fs.unlink(imageLocalPath, (err) => {
-            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+            // if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
         });
 
         return res.status(200).json(new ApiResponse({
@@ -217,7 +218,7 @@ const predictCottonLeafDisease = asyncHandler(async (req, res) => {
     } catch (error) {
         // Make sure to delete the image even if the prediction fails
         fs.unlink(imageLocalPath, (err) => {
-            if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
+            // if (err) console.error(`Failed to delete image: ${imageLocalPath}`, err);
         });
         throw new ApiError(500, "Cotton leaf disease prediction failed", error);
     }
@@ -248,7 +249,7 @@ const predictCropYieldPrediction = asyncHandler(async (req, res) => {
     };
 
     try {
-        const response = await axios.post("http://localhost:5000/predict/yield", inputData);
+        const response = await axios.post(`${API_URL}/predict/yield`, inputData);
 
         return res.status(200).json(new ApiResponse({
             statusCode: 200,

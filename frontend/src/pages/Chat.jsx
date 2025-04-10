@@ -58,7 +58,7 @@ const Chat = () => {
   }, [selectedChat, allMessages]);
   useEffect(() => {
     if (user) {
-      socketRef.current = io("http://localhost:4000");
+      socketRef.current = io(`${import.meta.env.VITE_SOCKET_URL}`);
       socketRef.current.emit("setup", user._id);
       socketRef.current.on("connected", () => {
         setSocketConnected(true);
@@ -71,7 +71,7 @@ const Chat = () => {
     if (user) {
       // console.log("Socket connected insidde user:", socketConnected);
       socketRef.current.on("messageReceived", (newMessage) => {
-        console.log("newMessage", newMessage);
+        // console.log("newMessage", newMessage);
         if (
           !selectedChatCompare ||
           selectedChatCompare._id !== newMessage.chat._id
@@ -86,11 +86,11 @@ const Chat = () => {
         }
       });
       socketRef.current.on("typing", () => {
-        console.log("typing");
+        // console.log("typing");
         setTyping(true);
       });
       socketRef.current.on("stopTyping", () => {
-        console.log("stopTyping");
+        // console.log("stopTyping");
         setTyping(false);
       });
     }
@@ -105,7 +105,7 @@ const Chat = () => {
     setTimeout(() => {
       let timeNow = new Date().getTime();
       let timeDiff = timeNow - lastTypingTime;
-      console.log("timeDiff", timeDiff);
+      // console.log("timeDiff", timeDiff);
       if (timeDiff >= 3000) {
         // console.log("koko");
         socketRef.current.emit("stopTyping", selectedChat._id);
@@ -125,7 +125,7 @@ const Chat = () => {
       setAllMessages(response.data.data);
       scrollToBottom(); // Scroll to the bottom after fetching messages
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      // console.error("Error fetching messages:", error);
     }
   };
   const fetchUsers = async () => {
@@ -138,7 +138,7 @@ const Chat = () => {
       );
       setUsers(response.data.data);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      // console.error("Error fetching users:", error);
     }
   };
   const fetchChats = async () => {
@@ -151,7 +151,7 @@ const Chat = () => {
       );
       setChats(response.data.data);
     } catch (error) {
-      console.error("Error fetching chats:", error);
+      // console.error("Error fetching chats:", error);
     }
   };
 
@@ -172,7 +172,7 @@ const Chat = () => {
       setGroupUsers([]);
       fetchChats();
     } catch (error) {
-      console.error("Error creating group:", error);
+      // console.error("Error creating group:", error);
     }
   };
   const handleSelectChat = async (user) => {
@@ -188,7 +188,7 @@ const Chat = () => {
       fetchChats();
       fetchMessages(response.data.data._id);
     } catch (error) {
-      console.error("Error selecting chat:", error);
+      // console.error("Error selecting chat:", error);
     }
   };
   const handleSendMessage = async (e) => {
@@ -212,7 +212,7 @@ const Chat = () => {
 
       fetchMessages(selectedChat._id);
     } catch (error) {
-      console.error("Error sending message:", error);
+      // console.error("Error sending message:", error);
     }
   };
   const removeUserFromGroup = async (userId) => {
@@ -228,7 +228,7 @@ const Chat = () => {
       });
       fetchChats();
     } catch (error) {
-      console.error("Error removing user from group:", error);
+      // console.error("Error removing user from group:", error);
     }
   };
   const handleChangeGroup = async () => {
@@ -245,7 +245,7 @@ const Chat = () => {
       setGroupSettings(false);
       fetchChats();
     } catch (error) {
-      console.error("Error changing group name:", error);
+      // console.error("Error changing group name:", error);
     }
   };
   const addUserToGroup = async (userId) => {
@@ -255,12 +255,12 @@ const Chat = () => {
         { userId, chatId: selectedGroup._id },
         { withCredentials: true }
       );
-      console.log(response.data.data);
+      // console.log(response.data.data);
       setSelectedGroup(response.data.data);
 
       fetchChats();
     } catch (error) {
-      console.error("Error adding user to group:", error);
+      // console.error("Error adding user to group:", error);
     }
   };
 

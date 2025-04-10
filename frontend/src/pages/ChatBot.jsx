@@ -4,7 +4,7 @@ import { Send } from "lucide-react";
 
 // ✅ Function to format bot responses using Tailwind classes
 const formatResponse = (response) => {
-  console.log(response);
+  // console.log(response);
   return response
     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong class="font-bold italic">$1</strong>') // Bold + Italic
     .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>') // Bold
@@ -67,7 +67,7 @@ const ChatBot = () => {
         { role: "model", content: formatResponse(reply) },
       ]);
     } catch (error) {
-      console.error("Error:", error);
+      // console.error("Error:", error);
     } finally {
       setLoading(false);
     }
