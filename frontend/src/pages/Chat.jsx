@@ -501,32 +501,16 @@ const Chat = () => {
                       onSubmit={handleSendMessage}
                       className="flex space-x-4"
                     >
-                      {typing && (
-                        <div className="flex items-center space-x-2 mb-2">
-                          <div className="h-2 w-2 bg-green-500 rounded-full animate-ping" />
-                          <span className="text-sm text-gray-500">
-                            Typing...
-                          </span>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                      >
-                        <Smile className="h-6 w-6 text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                      >
-                        <Image className="h-6 w-6 text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                      >
-                        <Paperclip className="h-6 w-6 text-gray-600" />
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        {typing && (
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className="h-2 w-2 bg-green-500 rounded-full animate-ping" />
+                            <span className="text-sm text-gray-500">
+                              Typing...
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       <input
                         type="text"
                         value={message}

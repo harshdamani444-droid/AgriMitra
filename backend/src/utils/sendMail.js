@@ -1,7 +1,7 @@
 import nodeMailer from "nodemailer";
 
 //* Utility function to send email
-const sendMail = async ({ to, subject, content, isHtml = false }) => {
+const sendMail = async ({ to, subject, content, isHtml = false, attachments }) => {
   // create a transporter
   const transporter = nodeMailer.createTransport({
     service: "gmail",
@@ -19,6 +19,8 @@ const sendMail = async ({ to, subject, content, isHtml = false }) => {
     to,
     subject,
     [isHtml ? "html" : "text"]: content,
+    attachments,
+
   };
 
   // send mail
