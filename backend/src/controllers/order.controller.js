@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Cart } from "../models/cart.model.js";
 import { Order } from "../models/order.model.js";
 import { User } from "../models/user.model.js";
+import { Product } from "../models/product.model.js";
 import {
   ApiError as PayPalApiError,
   CheckoutPaymentIntent,
@@ -146,10 +147,6 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Order not created", null);
   }
 
-  // remove cart from database
-  // TODO: uncomment this line to remove cart from database
-  // await Cart.findByIdAndDelete(cart._id);
-
   // create payment link with razorpay
   const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
 
@@ -226,7 +223,6 @@ const createOrder = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Failed to create order." });
   }
 });
-
 
 const complteOrder = asyncHandler(async (req, res) => {
   // get user from req
@@ -305,6 +301,24 @@ const complteOrder = asyncHandler(async (req, res) => {
     const { jsonResponse, httpStatusCode } = await captureOrder(paypalOrderId);
     // update order status in database
 
+    // reduce quantity if products
+
+    let cart = await Cart.findOne({ owner: user._id });
+
+    if (cart)
+      await Promise.all(
+        cart.products.map(async (product) => {
+          const productDetails = await Product.findById(product.product);
+          if (productDetails) {
+            productDetails.quantity -= product.quantity;
+            await productDetails.save();
+          }
+        })
+      );
+
+    // remove cart from database
+    await Cart.findByIdAndDelete(cart._id)
+
     order.paymentInfo = jsonResponse;
     order.orderStatus = "Confirmed";
     // TODO: call delivery partner API to confirm order and get tracking details
@@ -317,7 +331,7 @@ const complteOrder = asyncHandler(async (req, res) => {
 
     const OrderToBeSent = await getOrderByIdFunction(order._id);
     // console.log(OrderToBeSent);
-    await invoiceQueue.add('send-invoice', {
+    await invoiceQueue.add("send-invoice", {
       order: OrderToBeSent,
       user: {
         email: user.email,
@@ -334,13 +348,13 @@ const complteOrder = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Failed to capture order." });
   }
 });
+
 const getOrderByIdFunction = async (id) => {
   try {
     let order = await Order.aggregate([
       {
         $match: {
           _id: new mongoose.Types.ObjectId(id),
-
         },
       },
       {
@@ -419,13 +433,11 @@ const getOrderByIdFunction = async (id) => {
     }, 0);
 
     return order;
-  }
-  catch (error) {
+  } catch (error) {
     // console.error("Failed to get order by id:", error);
     throw new ApiError(500, "Failed to get order by id", null);
-
   }
-}
+};
 
 const getOrderByFarmerId = asyncHandler(async (req, res) => {
   // get user from req
@@ -525,16 +537,15 @@ const getOrderByFarmerId = asyncHandler(async (req, res) => {
   });
 
   // filter out orders with no products
-  orders = orders.map(order => {
-    order.orderItems = order.orderItems.filter(item => item.productDetails);
+  orders = orders.map((order) => {
+    order.orderItems = order.orderItems.filter((item) => item.productDetails);
     return order;
-  })
+  });
 
   orders?.map((order) => {
     order.totalAmount = order?.orderItems?.reduce((acc, item) => {
       return acc + item.productDetails?.price * item?.quantity;
     }, 0);
-
 
     order.orderItems = undefined;
   });
@@ -671,7 +682,6 @@ const getOrderById = asyncHandler(async (req, res) => {
     {
       $match: {
         _id: new mongoose.Types.ObjectId(id),
-
       },
     },
     {
@@ -879,7 +889,6 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   // get order id from params
   const { orderId, status } = req.body;
 
-
   // get order from database
   let order = await Order.findById(orderId);
 
@@ -890,7 +899,6 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   // check if user is farmer or consumer
   if (user.role !== "farmer") {
     throw new ApiError(401, "Unauthorized", null);
-
   }
 
   // update order status in database
@@ -913,5 +921,5 @@ export {
   getOrderByFarmerId,
   getOrderById,
   getOrderByIdForFarmer,
-  updateOrderStatus
+  updateOrderStatus,
 };
