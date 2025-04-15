@@ -20,7 +20,7 @@ const app = express();
 
 // CORS options on the backend
 const corsOptions = {
-  origin: `${process.env.FRONTEND_URL}:${process.env.FRONTEND_PORT}`,  // Match the frontend origin
+  origin: `${process.env.FRONTEND_URL}`,  // Match the frontend origin
   credentials: true,                // Allow sending cookies
 };
 app.use(cors(corsOptions));
