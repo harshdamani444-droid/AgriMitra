@@ -38,6 +38,7 @@ import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OrderConfirmation from "./components/OrderConformation";
+import PlantLoader from "./components/PlantLoader";
 
 function App() {
   const dispatch = useDispatch();
@@ -60,6 +61,7 @@ function App() {
         <Navbar />
         <div className="flex-grow">
           <Routes>
+            <Route path="/load" element={<PlantLoader />} />
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/shop/product" element={<ProductDetail />} />
