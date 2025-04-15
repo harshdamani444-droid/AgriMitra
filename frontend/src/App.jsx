@@ -61,7 +61,6 @@ function App() {
         <Navbar />
         <div className="flex-grow">
           <Routes>
-            <Route path="/load" element={<PlantLoader />} />
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/shop/product" element={<ProductDetail />} />
