@@ -75,7 +75,12 @@ import orderRoutes from "./routes/order.routes.js"
 import chatRoutes from "./routes/chat.routes.js";
 
 import messageRoutes from "./routes/message.route.js";
-
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Backend server is running!",
+    success: true,
+  });
+});
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/product", productRoutes);
